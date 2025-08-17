@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
         client_secret: process.env.GOOGLE_CLIENT_SECRET!,
         code,
         grant_type: "authorization_code",
-        redirect_uri: `${process.env.NEXT_PUBLIC_SITE_URL}/api/cloud-storage/google/callback`,
+        redirect_uri: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/google-callback`,
       }),
     })
 
