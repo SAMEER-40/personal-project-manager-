@@ -159,8 +159,16 @@ export function ProjectDashboard({ userRole, onBackToWelcome, user, onSignOut }:
 
     console.log("[v0] Adding project:", { title: newProject.title, user: user?.id || "localStorage" })
 
+    const generateId = () => {
+      if (typeof window.crypto !== "undefined" && window.crypto.randomUUID) {
+        return window.crypto.randomUUID()
+      }
+      // Fallback for environments without crypto.randomUUID
+      return Date.now().toString() + "-" + Math.random().toString(36).substr(2, 9)
+    }
+
     const project: Project = {
-      id: Date.now().toString(),
+      id: generateId(),
       title: newProject.title,
       type: newProject.type || PROJECT_TYPES_BY_ROLE[userRole.id as keyof typeof PROJECT_TYPES_BY_ROLE][0],
       status: "active",
@@ -206,9 +214,17 @@ export function ProjectDashboard({ userRole, onBackToWelcome, user, onSignOut }:
   const handleAddProjectFromFeatures = async (projectData: Omit<Project, "id" | "createdAt" | "lastActivity">) => {
     console.log("[v0] Adding project from features:", { title: projectData.title, type: projectData.type })
 
+    const generateId = () => {
+      if (typeof window.crypto !== "undefined" && window.crypto.randomUUID) {
+        return window.crypto.randomUUID()
+      }
+      // Fallback for environments without crypto.randomUUID
+      return Date.now().toString() + "-" + Math.random().toString(36).substr(2, 9)
+    }
+
     const project: Project = {
       ...projectData,
-      id: Date.now().toString(),
+      id: generateId(),
       createdAt: new Date(),
       lastActivity: new Date(),
       user_id: user?.id,
@@ -391,25 +407,28 @@ export function ProjectDashboard({ userRole, onBackToWelcome, user, onSignOut }:
   })
 
   return (
-    <div className="min-h-screen bg-background p-6">
-      <div className="max-w-6xl mx-auto">
+    <div className="min-h-screen bg-gradient-to-br from-background to-muted/20 p-4 sm:p-6">
+      <div className="max-w-7xl mx-auto">
         {user && <AuthenticatedHeader user={user} userRole={userRole.title} onRoleChange={handleRoleChange} />}
 
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
           <div className="flex items-center gap-4">
-            <Button variant="outline" onClick={onBackToWelcome}>
+            <Button variant="outline" onClick={onBackToWelcome} className="shrink-0 bg-transparent">
               ← Back
             </Button>
             <div>
-              <h1 className="text-3xl font-bold flex items-center gap-2">
+              <h1 className="text-2xl sm:text-3xl font-bold flex items-center gap-3">
                 <span className="text-2xl">{userRole.icon}</span>
                 Your Project Sanctuary
               </h1>
-              <p className="text-muted-foreground">Managing your creative journey with intention</p>
+              <p className="text-muted-foreground text-sm sm:text-base">
+                Managing your creative journey with intention
+              </p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+
+          <div className="flex items-center gap-2 w-full sm:w-auto">
             {!user && (
               <div className="flex items-center gap-3 mr-4">
                 <div className="text-right">
@@ -428,41 +447,51 @@ export function ProjectDashboard({ userRole, onBackToWelcome, user, onSignOut }:
               </div>
             )}
 
-            <Button
-              variant={activeView === "projects" ? "default" : "outline"}
-              size="sm"
-              onClick={() => setActiveView("projects")}
-            >
-              <Grid3X3 className="h-4 w-4 mr-1" />
-              Projects
-            </Button>
-            <Button
-              variant={activeView === "analytics" ? "default" : "outline"}
-              size="sm"
-              onClick={() => setActiveView("analytics")}
-            >
-              <TrendingUp className="h-4 w-4 mr-1" />
-              Analytics
-            </Button>
-            <Button
-              variant={activeView === "timeline" ? "default" : "outline"}
-              size="sm"
-              onClick={() => setActiveView("timeline")}
-            >
-              <BarChart3 className="h-4 w-4 mr-1" />
-              Timeline
-            </Button>
-            <Button
-              variant={activeView === "archive" ? "default" : "outline"}
-              size="sm"
-              onClick={() => setActiveView("archive")}
-            >
-              <Archive className="h-4 w-4 mr-1" />
-              Garden ({archivedProjects.length})
-            </Button>
+            <div className="flex flex-wrap gap-2">
+              <Button
+                variant={activeView === "projects" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setActiveView("projects")}
+                className="text-xs sm:text-sm"
+              >
+                <Grid3X3 className="h-4 w-4 mr-1" />
+                <span className="hidden sm:inline">Projects</span>
+              </Button>
+              <Button
+                variant={activeView === "analytics" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setActiveView("analytics")}
+                className="text-xs sm:text-sm"
+              >
+                <TrendingUp className="h-4 w-4 mr-1" />
+                <span className="hidden sm:inline">Analytics</span>
+              </Button>
+              <Button
+                variant={activeView === "timeline" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setActiveView("timeline")}
+                className="text-xs sm:text-sm"
+              >
+                <BarChart3 className="h-4 w-4 mr-1" />
+                <span className="hidden sm:inline">Timeline</span>
+              </Button>
+              <Button
+                variant={activeView === "archive" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setActiveView("archive")}
+                className="text-xs sm:text-sm"
+              >
+                <Archive className="h-4 w-4 mr-1" />
+                <span className="hidden sm:inline">Garden</span> ({archivedProjects.length})
+              </Button>
+            </div>
+
             <Dialog open={showAddProject} onOpenChange={setShowAddProject}>
               <DialogTrigger asChild>
-                <Button className="bg-primary hover:bg-primary/90">+ Add Project</Button>
+                <Button className="bg-primary hover:bg-primary/90 text-sm">
+                  <span className="hidden sm:inline">+ Add Project</span>
+                  <span className="sm:hidden">+</span>
+                </Button>
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader>
@@ -564,29 +593,28 @@ export function ProjectDashboard({ userRole, onBackToWelcome, user, onSignOut }:
             {/* Alternative Storage for backup and export functionality */}
             <AlternativeStorage projects={projects} user={user} onImportProjects={handleImportProjects} />
 
-            {/* Stats Overview */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-              <Card>
-                <CardContent className="p-4">
-                  <div className="text-2xl font-bold text-primary">{activeProjects.length}</div>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+              <Card className="bg-card/50 backdrop-blur-sm border-border/50">
+                <CardContent className="p-4 sm:p-6">
+                  <div className="text-2xl sm:text-3xl font-bold text-primary">{activeProjects.length}</div>
                   <div className="text-sm text-muted-foreground">Active Projects</div>
                 </CardContent>
               </Card>
-              <Card>
-                <CardContent className="p-4">
-                  <div className="text-2xl font-bold text-accent">{pausedProjects.length}</div>
+              <Card className="bg-card/50 backdrop-blur-sm border-border/50">
+                <CardContent className="p-4 sm:p-6">
+                  <div className="text-2xl sm:text-3xl font-bold text-accent">{pausedProjects.length}</div>
                   <div className="text-sm text-muted-foreground">Paused Projects</div>
                 </CardContent>
               </Card>
-              <Card>
-                <CardContent className="p-4">
-                  <div className="text-2xl font-bold text-chart-5">{completedProjects.length}</div>
+              <Card className="bg-card/50 backdrop-blur-sm border-border/50">
+                <CardContent className="p-4 sm:p-6">
+                  <div className="text-2xl sm:text-3xl font-bold text-chart-5">{completedProjects.length}</div>
                   <div className="text-sm text-muted-foreground">Completed</div>
                 </CardContent>
               </Card>
-              <Card>
-                <CardContent className="p-4">
-                  <div className="text-2xl font-bold text-muted-foreground">{archivedProjects.length}</div>
+              <Card className="bg-card/50 backdrop-blur-sm border-border/50">
+                <CardContent className="p-4 sm:p-6">
+                  <div className="text-2xl sm:text-3xl font-bold text-muted-foreground">{archivedProjects.length}</div>
                   <div className="text-sm text-muted-foreground">Archived</div>
                 </CardContent>
               </Card>
@@ -594,14 +622,13 @@ export function ProjectDashboard({ userRole, onBackToWelcome, user, onSignOut }:
 
             {/* Projects Sections */}
             <div className="space-y-8">
-              {/* Active Projects */}
               {activeProjects.length > 0 && (
                 <div>
-                  <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+                  <h2 className="text-xl font-semibold mb-6 flex items-center gap-3">
                     <div className="w-3 h-3 bg-primary rounded-full"></div>
                     Active Projects ({activeProjects.length})
                   </h2>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                     {activeProjects.map((project) => (
                       <ProjectCard
                         key={project.id}
@@ -615,14 +642,13 @@ export function ProjectDashboard({ userRole, onBackToWelcome, user, onSignOut }:
                 </div>
               )}
 
-              {/* Paused Projects */}
               {pausedProjects.length > 0 && (
                 <div>
-                  <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+                  <h2 className="text-xl font-semibold mb-6 flex items-center gap-3">
                     <div className="w-3 h-3 bg-accent rounded-full"></div>
                     Paused Projects ({pausedProjects.length})
                   </h2>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                     {pausedProjects.map((project) => (
                       <ProjectCard
                         key={project.id}
@@ -636,14 +662,13 @@ export function ProjectDashboard({ userRole, onBackToWelcome, user, onSignOut }:
                 </div>
               )}
 
-              {/* Completed Projects */}
               {completedProjects.length > 0 && (
                 <div>
-                  <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+                  <h2 className="text-xl font-semibold mb-6 flex items-center gap-3">
                     <div className="w-3 h-3 bg-chart-5 rounded-full"></div>
                     Completed Projects ({completedProjects.length})
                   </h2>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                     {completedProjects.map((project) => (
                       <ProjectCard
                         key={project.id}
@@ -659,14 +684,14 @@ export function ProjectDashboard({ userRole, onBackToWelcome, user, onSignOut }:
 
               {/* Empty State */}
               {projects.length === 0 && (
-                <div className="text-center py-12">
-                  <div className="text-6xl mb-4">{userRole.icon}</div>
-                  <h3 className="text-xl font-semibold mb-2">Ready to start your journey?</h3>
-                  <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+                <div className="text-center py-16">
+                  <div className="text-6xl mb-6">{userRole.icon}</div>
+                  <h3 className="text-xl font-semibold mb-4">Ready to start your journey?</h3>
+                  <p className="text-muted-foreground mb-8 max-w-md mx-auto leading-relaxed">
                     Add your first project to begin tracking your creative work. Remember, every great achievement
                     starts with a single step.
                   </p>
-                  <Button onClick={() => setShowAddProject(true)} className="bg-primary hover:bg-primary/90">
+                  <Button onClick={() => setShowAddProject(true)} className="bg-primary hover:bg-primary/90 px-8">
                     Add Your First Project
                   </Button>
                 </div>

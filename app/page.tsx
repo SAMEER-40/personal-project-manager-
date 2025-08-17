@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { ProjectDashboard } from "@/components/project-dashboard"
 import { DataSyncProvider, useDataSync } from "@/components/data-sync-provider"
+import { ThemeToggle } from "@/components/theme-toggle"
 import { supabase } from "@/lib/supabase/client"
 import { signOut } from "@/lib/auth-actions"
 
@@ -182,64 +183,65 @@ function HomePageContent() {
 
   if (showWelcome && selectedRoleData) {
     return (
-      <div className="min-h-screen bg-background p-6">
+      <div className="min-h-screen bg-gradient-to-br from-background to-muted/20 p-4 sm:p-6">
         <div className="max-w-2xl mx-auto">
-          {user && (
-            <div className="flex justify-between items-center mb-6">
-              <div className="text-sm text-muted-foreground">Welcome back, {user.email}</div>
-              <Button variant="outline" size="sm" onClick={handleSignOut}>
-                Sign Out
-              </Button>
+          <div className="flex justify-between items-center mb-8">
+            {user && <div className="text-sm text-muted-foreground">Welcome back, {user.email}</div>}
+            <div className="flex items-center gap-2">
+              <ThemeToggle />
+              {user && (
+                <Button variant="outline" size="sm" onClick={handleSignOut}>
+                  Sign Out
+                </Button>
+              )}
             </div>
-          )}
+          </div>
 
           <div className="text-center mb-8">
-            <div className="text-6xl mb-4">{selectedRoleData.icon}</div>
-            <h1 className="text-3xl font-bold text-foreground mb-2">Welcome, {selectedRoleData.title}!</h1>
-            <p className="text-muted-foreground text-lg">
+            <div className="text-6xl mb-6">{selectedRoleData.icon}</div>
+            <h1 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">Welcome, {selectedRoleData.title}!</h1>
+            <p className="text-muted-foreground text-lg leading-relaxed">
               Let's help you reconnect with your creative journey and give your unfinished projects the attention they
               deserve.
             </p>
           </div>
 
-          <Card className="mb-6">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+          <Card className="mb-8 border-0 shadow-lg bg-card/50 backdrop-blur-sm">
+            <CardHeader className="pb-4">
+              <CardTitle className="flex items-center gap-3 text-xl">
                 <span className="text-2xl">{selectedRoleData.icon}</span>
                 Your Creative Space
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-base">
                 A supportive environment designed specifically for {selectedRoleData.description.toLowerCase()}
               </CardDescription>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div>
-                  <h3 className="font-semibold mb-2">What you can manage here:</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {selectedRoleData.examples.map((example, index) => (
-                      <Badge key={index} variant="secondary" className="text-sm">
-                        {example}
-                      </Badge>
-                    ))}
-                  </div>
+            <CardContent className="space-y-6">
+              <div>
+                <h3 className="font-semibold mb-3 text-foreground">What you can manage here:</h3>
+                <div className="flex flex-wrap gap-2">
+                  {selectedRoleData.examples.map((example, index) => (
+                    <Badge key={index} variant="secondary" className="text-sm px-3 py-1">
+                      {example}
+                    </Badge>
+                  ))}
                 </div>
+              </div>
 
-                <div className="bg-muted/50 p-4 rounded-lg">
-                  <p className="text-sm text-muted-foreground">
-                    <strong>Remember:</strong> Every creative journey has pauses, pivots, and new beginnings. This tool
-                    is here to help you navigate them with kindness and intention.
-                  </p>
-                </div>
+              <div className="bg-muted/30 p-4 rounded-lg border border-border/50">
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  <strong className="text-foreground">Remember:</strong> Every creative journey has pauses, pivots, and
+                  new beginnings. This tool is here to help you navigate them with kindness and intention.
+                </p>
               </div>
             </CardContent>
           </Card>
 
-          <div className="flex gap-4 justify-center">
-            <Button onClick={handleStartManaging} size="lg" className="bg-primary hover:bg-primary/90">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button onClick={handleStartManaging} size="lg" className="bg-primary hover:bg-primary/90 px-8">
               Start Managing Projects
             </Button>
-            <Button variant="outline" onClick={() => setShowWelcome(false)} size="lg">
+            <Button variant="outline" onClick={() => setShowWelcome(false)} size="lg" className="px-8">
               Choose Different Role
             </Button>
           </div>
@@ -249,29 +251,34 @@ function HomePageContent() {
   }
 
   return (
-    <div className="min-h-screen bg-background p-6">
-      <div className="max-w-4xl mx-auto">
-        {user && (
-          <div className="flex justify-between items-center mb-6">
-            <div className="text-sm text-muted-foreground">Signed in as {user.email}</div>
-            <Button variant="outline" size="sm" onClick={handleSignOut}>
-              Sign Out
-            </Button>
+    <div className="min-h-screen bg-gradient-to-br from-background to-muted/20 p-4 sm:p-6">
+      <div className="max-w-5xl mx-auto">
+        <div className="flex justify-between items-center mb-8">
+          {user && <div className="text-sm text-muted-foreground">Signed in as {user.email}</div>}
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            {user && (
+              <Button variant="outline" size="sm" onClick={handleSignOut}>
+                Sign Out
+              </Button>
+            )}
           </div>
-        )}
+        </div>
 
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-foreground mb-4">Welcome to Your Project Sanctuary</h1>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+          <h1 className="text-4xl sm:text-5xl font-bold text-foreground mb-6 leading-tight">
+            Welcome to Your Project Sanctuary
+          </h1>
+          <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
             A gentle space to reconnect with your unfinished projects, reflect on your creative journey, and move
             forward with intention—not guilt.
           </p>
           {!user && (
-            <div className="mt-6 p-4 bg-muted/50 rounded-lg max-w-md mx-auto">
-              <p className="text-sm text-muted-foreground mb-3">
+            <div className="mt-8 p-6 bg-card/50 backdrop-blur-sm rounded-lg border border-border/50 max-w-md mx-auto">
+              <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
                 Sign in to sync your projects across devices and never lose your creative work.
               </p>
-              <div className="flex gap-2 justify-center">
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
                 <Button variant="outline" size="sm" onClick={() => (window.location.href = "/auth/login")}>
                   Sign In
                 </Button>
@@ -283,31 +290,31 @@ function HomePageContent() {
           )}
         </div>
 
-        <div className="mb-8">
-          <h2 className="text-2xl font-semibold text-center mb-6">First, tell us about yourself</h2>
-          <p className="text-center text-muted-foreground mb-8">
+        <div className="mb-12">
+          <h2 className="text-2xl sm:text-3xl font-semibold text-center mb-6">First, tell us about yourself</h2>
+          <p className="text-center text-muted-foreground mb-8 max-w-2xl mx-auto leading-relaxed">
             Choose the role that best describes your creative work. This helps us tailor the experience to your needs.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
           {USER_ROLES.map((role) => (
             <Card
               key={role.id}
-              className="cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-105 border-2 hover:border-primary/50"
+              className="cursor-pointer transition-all duration-300 hover:shadow-xl hover:scale-105 border-2 hover:border-primary/50 bg-card/50 backdrop-blur-sm group"
               onClick={() => handleRoleSelect(role.id)}
             >
-              <CardHeader className="text-center">
-                <div className="text-4xl mb-2">{role.icon}</div>
-                <CardTitle className="text-xl">{role.title}</CardTitle>
-                <CardDescription className="text-sm">{role.description}</CardDescription>
+              <CardHeader className="text-center pb-4">
+                <div className="text-5xl mb-4 group-hover:scale-110 transition-transform duration-300">{role.icon}</div>
+                <CardTitle className="text-xl mb-2">{role.title}</CardTitle>
+                <CardDescription className="text-sm leading-relaxed">{role.description}</CardDescription>
               </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
+              <CardContent className="pt-0">
+                <div className="space-y-3">
                   <p className="text-sm font-medium text-muted-foreground">Common projects:</p>
-                  <div className="flex flex-wrap gap-1">
+                  <div className="flex flex-wrap gap-2">
                     {role.examples.map((example, index) => (
-                      <Badge key={index} variant="outline" className="text-xs">
+                      <Badge key={index} variant="outline" className="text-xs px-2 py-1">
                         {example}
                       </Badge>
                     ))}
@@ -318,10 +325,10 @@ function HomePageContent() {
           ))}
         </div>
 
-        <div className="mt-12 text-center">
-          <div className="bg-card p-6 rounded-lg border max-w-2xl mx-auto">
-            <h3 className="font-semibold mb-2">Not sure which fits?</h3>
-            <p className="text-sm text-muted-foreground">
+        <div className="text-center">
+          <div className="bg-card/50 backdrop-blur-sm p-8 rounded-lg border border-border/50 max-w-2xl mx-auto">
+            <h3 className="font-semibold mb-3 text-lg">Not sure which fits?</h3>
+            <p className="text-sm text-muted-foreground leading-relaxed">
               Don't worry! You can always change your role later. The important thing is starting your journey toward
               more intentional project management.
             </p>
