@@ -28,7 +28,7 @@ export default function GoogleCallbackPage() {
         }
 
         // Exchange code for access token
-        const response = await fetch("/api/cloud-storage/google/callback", {
+        const response = await fetch("/api/cloud-storage/google/auth", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
