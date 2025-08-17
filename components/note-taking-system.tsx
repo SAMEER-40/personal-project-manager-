@@ -17,7 +17,20 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { StickyNote, Plus, Search, Pin, Archive, Trash2, Edit3, Save } from "lucide-react"
+import {
+  StickyNote,
+  Plus,
+  Search,
+  Pin,
+  Archive,
+  Trash2,
+  Edit3,
+  Save,
+  Settings,
+  Palette,
+  Type,
+  Layout,
+} from "lucide-react"
 
 interface Note {
   id: string
@@ -30,11 +43,16 @@ interface Note {
   createdAt: Date
   updatedAt: Date
   projectId?: string
+  backgroundColor?: string
+  textColor?: string
+  fontSize?: string
+  fontFamily?: string
 }
 
 interface NoteTakingSystemProps {
   user?: any
   projects?: any[]
+  isFloating?: boolean
 }
 
 const NOTE_CATEGORIES = [
@@ -44,22 +62,53 @@ const NOTE_CATEGORIES = [
   { id: "learning", label: "Learning", icon: "📚" },
   { id: "inspiration", label: "Inspiration", icon: "✨" },
   { id: "personal", label: "Personal", icon: "❤️" },
+  { id: "work", label: "Work", icon: "💼" },
+  { id: "meetings", label: "Meetings", icon: "🤝" },
+  { id: "reminders", label: "Reminders", icon: "⏰" },
+  { id: "research", label: "Research", icon: "🔍" },
 ]
 
-export function NoteTakingSystem({ user, projects = [] }: NoteTakingSystemProps) {
+const BACKGROUND_COLORS = [
+  { id: "default", label: "Default", value: "default" },
+  { id: "yellow", label: "Yellow", value: "bg-yellow-50 dark:bg-yellow-950/20" },
+  { id: "blue", label: "Blue", value: "bg-blue-50 dark:bg-blue-950/20" },
+  { id: "green", label: "Green", value: "bg-green-50 dark:bg-green-950/20" },
+  { id: "purple", label: "Purple", value: "bg-purple-50 dark:bg-purple-950/20" },
+  { id: "pink", label: "Pink", value: "bg-pink-50 dark:bg-pink-950/20" },
+]
+
+const FONT_SIZES = [
+  { id: "small", label: "Small", value: "text-sm" },
+  { id: "medium", label: "Medium", value: "text-base" },
+  { id: "large", label: "Large", value: "text-lg" },
+]
+
+const FONT_FAMILIES = [
+  { id: "default", label: "Default", value: "default" },
+  { id: "mono", label: "Monospace", value: "font-mono" },
+  { id: "serif", label: "Serif", value: "font-serif" },
+]
+
+export function NoteTakingSystem({ user, projects = [], isFloating = false }: NoteTakingSystemProps) {
   const [notes, setNotes] = useState<Note[]>([])
   const [showAddNote, setShowAddNote] = useState(false)
   const [editingNote, setEditingNote] = useState<Note | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
-  const [filterCategory, setFilterCategory] = useState<string>("general")
+  const [filterCategory, setFilterCategory] = useState<string>("all")
   const [filterTags, setFilterTags] = useState<string[]>([])
   const [showArchived, setShowArchived] = useState(false)
+  const [showCustomization, setShowCustomization] = useState(false)
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
   const [newNote, setNewNote] = useState({
     title: "",
     content: "",
     category: "general",
     tags: "",
     projectId: "none",
+    backgroundColor: "default",
+    textColor: "",
+    fontSize: "medium",
+    fontFamily: "default",
   })
 
   // Load notes from localStorage or Supabase
@@ -124,10 +173,24 @@ export function NoteTakingSystem({ user, projects = [] }: NoteTakingSystemProps)
       createdAt: new Date(),
       updatedAt: new Date(),
       projectId: newNote.projectId === "none" ? undefined : newNote.projectId,
+      backgroundColor: newNote.backgroundColor,
+      textColor: newNote.textColor,
+      fontSize: newNote.fontSize,
+      fontFamily: newNote.fontFamily,
     }
 
     setNotes([note, ...notes])
-    setNewNote({ title: "", content: "", category: "general", tags: "", projectId: "none" })
+    setNewNote({
+      title: "",
+      content: "",
+      category: "general",
+      tags: "",
+      projectId: "none",
+      backgroundColor: "default",
+      textColor: "",
+      fontSize: "medium",
+      fontFamily: "default",
+    })
     setShowAddNote(false)
   }
 
@@ -180,8 +243,8 @@ export function NoteTakingSystem({ user, projects = [] }: NoteTakingSystemProps)
   const allTags = [...new Set(notes.flatMap((note) => note.tags))]
 
   return (
-    <Card className="w-full">
-      <CardHeader>
+    <Card className={`w-full ${isFloating ? "border-0 shadow-none" : ""}`}>
+      <CardHeader className={isFloating ? "p-3" : ""}>
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <CardTitle className="flex items-center gap-2">
             <StickyNote className="h-5 w-5" />
@@ -189,6 +252,10 @@ export function NoteTakingSystem({ user, projects = [] }: NoteTakingSystemProps)
           </CardTitle>
 
           <div className="flex items-center gap-2 w-full sm:w-auto">
+            <Button variant="ghost" size="sm" onClick={() => setShowCustomization(true)} className="p-2">
+              <Settings className="h-4 w-4" />
+            </Button>
+
             <div className="flex items-center gap-2">
               <Switch id="show-archived" checked={showArchived} onCheckedChange={setShowArchived} />
               <Label htmlFor="show-archived" className="text-sm">
@@ -274,6 +341,65 @@ export function NoteTakingSystem({ user, projects = [] }: NoteTakingSystemProps)
                     )}
                   </div>
 
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                      <Label htmlFor="note-bg">Background</Label>
+                      <Select
+                        value={newNote.backgroundColor}
+                        onValueChange={(value) => setNewNote({ ...newNote, backgroundColor: value })}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Default" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {BACKGROUND_COLORS.map((bg) => (
+                            <SelectItem key={bg.id} value={bg.value}>
+                              {bg.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div>
+                      <Label htmlFor="note-font-size">Font Size</Label>
+                      <Select
+                        value={newNote.fontSize}
+                        onValueChange={(value) => setNewNote({ ...newNote, fontSize: value })}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {FONT_SIZES.map((size) => (
+                            <SelectItem key={size.id} value={size.id}>
+                              {size.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div>
+                      <Label htmlFor="note-font-family">Font Style</Label>
+                      <Select
+                        value={newNote.fontFamily}
+                        onValueChange={(value) => setNewNote({ ...newNote, fontFamily: value })}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {FONT_FAMILIES.map((font) => (
+                            <SelectItem key={font.id} value={font.value}>
+                              {font.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
                   <div>
                     <Label htmlFor="note-tags">Tags (comma-separated)</Label>
                     <Input
@@ -299,7 +425,7 @@ export function NoteTakingSystem({ user, projects = [] }: NoteTakingSystemProps)
         </div>
       </CardHeader>
 
-      <CardContent className="space-y-4">
+      <CardContent className={`space-y-4 ${isFloating ? "p-3 pt-0" : ""}`}>
         {/* Search and Filters */}
         <div className="flex flex-col gap-4">
           <div className="relative">
@@ -312,20 +438,41 @@ export function NoteTakingSystem({ user, projects = [] }: NoteTakingSystemProps)
             />
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-2">
-            <Select value={filterCategory} onValueChange={setFilterCategory}>
-              <SelectTrigger className="w-full sm:w-48">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Categories</SelectItem>
-                {NOTE_CATEGORIES.map((category) => (
-                  <SelectItem key={category.id} value={category.id}>
-                    {category.icon} {category.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          <div className="flex flex-col sm:flex-row gap-2 items-start sm:items-center">
+            <div className="flex gap-2 w-full sm:w-auto">
+              <Select value={filterCategory} onValueChange={setFilterCategory}>
+                <SelectTrigger className="w-full sm:w-48">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Categories</SelectItem>
+                  {NOTE_CATEGORIES.map((category) => (
+                    <SelectItem key={category.id} value={category.id}>
+                      {category.icon} {category.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              <div className="flex gap-1 border rounded-md p-1">
+                <Button
+                  variant={viewMode === "grid" ? "default" : "ghost"}
+                  size="sm"
+                  onClick={() => setViewMode("grid")}
+                  className="h-8 w-8 p-0"
+                >
+                  <Layout className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant={viewMode === "list" ? "default" : "ghost"}
+                  size="sm"
+                  onClick={() => setViewMode("list")}
+                  className="h-8 w-8 p-0"
+                >
+                  <Type className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
 
             {allTags.length > 0 && (
               <div className="flex flex-wrap gap-1">
@@ -347,14 +494,15 @@ export function NoteTakingSystem({ user, projects = [] }: NoteTakingSystemProps)
           </div>
         </div>
 
-        {/* Notes Grid */}
+        {/* Notes Grid/List */}
         {sortedNotes.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className={viewMode === "grid" ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" : "space-y-3"}>
             {sortedNotes.map((note) => (
               <NoteCard
                 key={note.id}
                 note={note}
                 projects={projects}
+                viewMode={viewMode}
                 onEdit={setEditingNote}
                 onDelete={handleDeleteNote}
                 onTogglePin={handleTogglePin}
@@ -380,6 +528,69 @@ export function NoteTakingSystem({ user, projects = [] }: NoteTakingSystemProps)
           </div>
         )}
 
+        <Dialog open={showCustomization} onOpenChange={setShowCustomization}>
+          <DialogContent className="w-[95vw] max-w-md mx-auto">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Palette className="h-5 w-5" />
+                Customize Notes
+              </DialogTitle>
+              <DialogDescription>
+                Personalize your note-taking experience with themes, layouts, and more.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <Label>View Mode</Label>
+                <div className="flex gap-2 mt-2">
+                  <Button
+                    variant={viewMode === "grid" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setViewMode("grid")}
+                    className="flex-1"
+                  >
+                    <Layout className="h-4 w-4 mr-2" />
+                    Grid
+                  </Button>
+                  <Button
+                    variant={viewMode === "list" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setViewMode("list")}
+                    className="flex-1"
+                  >
+                    <Type className="h-4 w-4 mr-2" />
+                    List
+                  </Button>
+                </div>
+              </div>
+
+              <div>
+                <Label>Quick Actions</Label>
+                <div className="grid grid-cols-2 gap-2 mt-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setFilterCategory("all")
+                      setFilterTags([])
+                      setSearchQuery("")
+                    }}
+                  >
+                    Clear Filters
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={() => setShowArchived(!showArchived)}>
+                    {showArchived ? "Show Active" : "Show Archived"}
+                  </Button>
+                </div>
+              </div>
+
+              <div className="flex justify-end">
+                <Button onClick={() => setShowCustomization(false)}>Done</Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+
         {/* Edit Note Dialog */}
         {editingNote && (
           <EditNoteDialog
@@ -398,6 +609,7 @@ export function NoteTakingSystem({ user, projects = [] }: NoteTakingSystemProps)
 function NoteCard({
   note,
   projects,
+  viewMode,
   onEdit,
   onDelete,
   onTogglePin,
@@ -405,6 +617,7 @@ function NoteCard({
 }: {
   note: Note
   projects: any[]
+  viewMode: "grid" | "list"
   onEdit: (note: Note) => void
   onDelete: (id: string) => void
   onTogglePin: (id: string) => void
@@ -413,15 +626,24 @@ function NoteCard({
   const category = NOTE_CATEGORIES.find((cat) => cat.id === note.category)
   const linkedProject = projects.find((p) => p.id === note.projectId)
 
+  const fontSize = FONT_SIZES.find((s) => s.id === note.fontSize)?.value || "text-base"
+  const fontFamily =
+    FONT_FAMILIES.find((f) => f.id === note.fontFamily)?.value === "default"
+      ? ""
+      : FONT_FAMILIES.find((f) => f.id === note.fontFamily)?.value || ""
+  const backgroundColor = note.backgroundColor === "default" ? "" : note.backgroundColor || ""
+
+  const cardClasses = `cursor-pointer hover:shadow-md transition-shadow ${
+    note.isPinned ? "ring-2 ring-primary/20" : ""
+  } ${backgroundColor} ${viewMode === "list" ? "flex items-start gap-4 p-4" : ""}`
+
   return (
-    <Card
-      className={`cursor-pointer hover:shadow-md transition-shadow ${note.isPinned ? "ring-2 ring-primary/20" : ""}`}
-    >
-      <CardContent className="p-4">
-        <div className="flex items-start justify-between mb-2">
+    <Card className={cardClasses}>
+      <CardContent className={viewMode === "list" ? "flex-1 p-0" : "p-4"}>
+        <div className={`flex items-start justify-between mb-2 ${viewMode === "list" ? "mb-1" : ""}`}>
           <div className="flex items-center gap-2 flex-1 min-w-0">
             {note.isPinned && <Pin className="h-4 w-4 text-primary shrink-0" />}
-            <h3 className="font-semibold text-sm truncate">{note.title}</h3>
+            <h3 className={`font-semibold truncate ${fontSize} ${fontFamily}`}>{note.title}</h3>
           </div>
           <div className="flex items-center gap-1 shrink-0">
             <Button
@@ -449,7 +671,13 @@ function NoteCard({
           </div>
         </div>
 
-        <p className="text-sm text-muted-foreground mb-3 line-clamp-3">{note.content}</p>
+        <p
+          className={`text-muted-foreground mb-3 ${fontSize} ${fontFamily} ${
+            viewMode === "list" ? "line-clamp-2" : "line-clamp-3"
+          }`}
+        >
+          {note.content}
+        </p>
 
         <div className="space-y-2">
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -465,14 +693,14 @@ function NoteCard({
 
           {note.tags.length > 0 && (
             <div className="flex flex-wrap gap-1">
-              {note.tags.slice(0, 3).map((tag) => (
+              {note.tags.slice(0, viewMode === "list" ? 2 : 3).map((tag) => (
                 <Badge key={tag} variant="secondary" className="text-xs">
                   {tag}
                 </Badge>
               ))}
-              {note.tags.length > 3 && (
+              {note.tags.length > (viewMode === "list" ? 2 : 3) && (
                 <Badge variant="outline" className="text-xs">
-                  +{note.tags.length - 3}
+                  +{note.tags.length - (viewMode === "list" ? 2 : 3)}
                 </Badge>
               )}
             </div>
@@ -527,6 +755,9 @@ function EditNoteDialog({
     ...note,
     tags: note.tags.join(", "),
     projectId: note.projectId || "none",
+    fontSize: note.fontSize || "medium",
+    fontFamily: note.fontFamily || "default",
+    backgroundColor: note.backgroundColor || "default",
   })
 
   const handleSave = () => {
@@ -609,6 +840,65 @@ function EditNoteDialog({
                 </Select>
               </div>
             )}
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div>
+              <Label htmlFor="edit-bg">Background</Label>
+              <Select
+                value={editedNote.backgroundColor}
+                onValueChange={(value) => setEditedNote({ ...editedNote, backgroundColor: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Default" />
+                </SelectTrigger>
+                <SelectContent>
+                  {BACKGROUND_COLORS.map((bg) => (
+                    <SelectItem key={bg.id} value={bg.value}>
+                      {bg.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label htmlFor="edit-font-size">Font Size</Label>
+              <Select
+                value={editedNote.fontSize}
+                onValueChange={(value) => setEditedNote({ ...editedNote, fontSize: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {FONT_SIZES.map((size) => (
+                    <SelectItem key={size.id} value={size.id}>
+                      {size.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label htmlFor="edit-font-family">Font Style</Label>
+              <Select
+                value={editedNote.fontFamily}
+                onValueChange={(value) => setEditedNote({ ...editedNote, fontFamily: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {FONT_FAMILIES.map((font) => (
+                    <SelectItem key={font.id} value={font.value}>
+                      {font.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
           <div>

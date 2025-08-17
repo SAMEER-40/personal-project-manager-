@@ -627,25 +627,46 @@ export function LaunchReadyFeatures({ projects, userRole, onUpdateProject, onAdd
                     (Date.now() - project.lastActivity.getTime()) / (1000 * 60 * 60 * 24),
                   )
                   return (
-                    <div
-                      key={project.id}
-                      className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 bg-muted/30 rounded-lg"
-                    >
+                    <div key={project.id} className="flex flex-col gap-3 p-3 bg-muted/30 rounded-lg">
                       <div className="flex-1 min-w-0">
-                        <p className="font-medium text-sm truncate">{project.title}</p>
+                        <p className="font-medium text-sm break-words">{project.title}</p>
                         <p className="text-sm text-muted-foreground">Last worked on {daysSinceActivity} days ago</p>
                       </div>
                       <Button
                         size="sm"
                         onClick={() => startFocusSession(project.id, 25)}
                         disabled={!!focusSession}
-                        className="w-full sm:w-auto shrink-0"
+                        className="w-full"
                       >
                         Focus Now
                       </Button>
                     </div>
                   )
                 })}
+
+              <div className="grid grid-cols-1 gap-3 mt-6">
+                <div className="flex flex-col gap-3 p-3 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 rounded-lg border border-blue-200 dark:border-blue-800">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                    <span className="font-medium text-sm">Log Mood & Energy</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">Track how you feel to optimize your productivity</p>
+                  <Button size="sm" variant="outline" className="w-full bg-white/50 dark:bg-gray-900/50">
+                    Quick Log
+                  </Button>
+                </div>
+
+                <div className="flex flex-col gap-3 p-3 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30 rounded-lg border border-green-200 dark:border-green-800">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                    <span className="font-medium text-sm">Social Achievements</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground">Share your progress and celebrate wins</p>
+                  <Button size="sm" variant="outline" className="w-full bg-white/50 dark:bg-gray-900/50">
+                    Share Progress
+                  </Button>
+                </div>
+              </div>
 
               {projects.filter((p) => p.status === "active").length === 0 && (
                 <p className="text-muted-foreground text-center py-4 text-sm">
