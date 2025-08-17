@@ -157,6 +157,8 @@ export function ProjectDashboard({ userRole, onBackToWelcome, user, onSignOut }:
   const handleAddProject = async () => {
     if (!newProject.title.trim()) return
 
+    console.log("[v0] Adding project:", { title: newProject.title, user: user?.id || "localStorage" })
+
     const project: Project = {
       id: Date.now().toString(),
       title: newProject.title,
@@ -171,6 +173,7 @@ export function ProjectDashboard({ userRole, onBackToWelcome, user, onSignOut }:
     }
 
     if (user) {
+      console.log("[v0] Saving project to Supabase")
       const { error } = await supabase.from("projects").insert([
         {
           id: project.id,
@@ -186,17 +189,23 @@ export function ProjectDashboard({ userRole, onBackToWelcome, user, onSignOut }:
       ])
 
       if (error) {
-        console.error("Error adding project:", error)
+        console.error("[v0] Error adding project to Supabase:", error)
         return
       }
+      console.log("[v0] Project saved to Supabase successfully")
+    } else {
+      console.log("[v0] Saving project to localStorage")
     }
 
     setProjects([project, ...projects])
     setNewProject({ title: "", type: "", description: "", notes: "" })
     setShowAddProject(false)
+    console.log("[v0] Project added successfully, total projects:", projects.length + 1)
   }
 
   const handleAddProjectFromFeatures = async (projectData: Omit<Project, "id" | "createdAt" | "lastActivity">) => {
+    console.log("[v0] Adding project from features:", { title: projectData.title, type: projectData.type })
+
     const project: Project = {
       ...projectData,
       id: Date.now().toString(),
@@ -206,6 +215,7 @@ export function ProjectDashboard({ userRole, onBackToWelcome, user, onSignOut }:
     }
 
     if (user) {
+      console.log("[v0] Saving feature project to Supabase")
       const { error } = await supabase.from("projects").insert([
         {
           id: project.id,
@@ -221,12 +231,16 @@ export function ProjectDashboard({ userRole, onBackToWelcome, user, onSignOut }:
       ])
 
       if (error) {
-        console.error("Error adding project:", error)
+        console.error("[v0] Error adding feature project to Supabase:", error)
         return
       }
+      console.log("[v0] Feature project saved to Supabase successfully")
+    } else {
+      console.log("[v0] Saving feature project to localStorage")
     }
 
     setProjects([project, ...projects])
+    console.log("[v0] Feature project added successfully, total projects:", projects.length + 1)
   }
 
   const handleUpdateProject = async (updatedProject: Project) => {
@@ -460,13 +474,15 @@ export function ProjectDashboard({ userRole, onBackToWelcome, user, onSignOut }:
                 </DialogHeader>
                 <div className="space-y-4">
                   <div>
-                    <Label htmlFor="title">Project Title</Label>
+                    <Label htmlFor="title">Project Title *</Label>
                     <Input
                       id="title"
                       placeholder="What are you building or creating?"
                       value={newProject.title}
                       onChange={(e) => setNewProject({ ...newProject, title: e.target.value })}
+                      className={!newProject.title.trim() ? "border-red-200" : ""}
                     />
+                    {!newProject.title.trim() && <p className="text-sm text-red-500 mt-1">Project title is required</p>}
                   </div>
                   <div>
                     <Label htmlFor="type">Project Type</Label>
@@ -508,7 +524,13 @@ export function ProjectDashboard({ userRole, onBackToWelcome, user, onSignOut }:
                     <Button variant="outline" onClick={() => setShowAddProject(false)}>
                       Cancel
                     </Button>
-                    <Button onClick={handleAddProject}>Add Project</Button>
+                    <Button
+                      onClick={handleAddProject}
+                      disabled={!newProject.title.trim()}
+                      className="bg-primary hover:bg-primary/90"
+                    >
+                      Add Project
+                    </Button>
                   </div>
                 </div>
               </DialogContent>
