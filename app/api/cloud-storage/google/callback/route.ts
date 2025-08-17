@@ -8,7 +8,8 @@ export async function POST(request: NextRequest) {
 
     const clientId = process.env.GOOGLE_CLIENT_ID!
     const clientSecret = process.env.GOOGLE_CLIENT_SECRET!
-    const redirectUri = `${process.env.NEXT_PUBLIC_SITE_URL}/auth/google-callback` // ✅ FIXED HERE
+    const redirectUri = `${process.env.NEXT_PUBLIC_SITE_URL}/api/cloud-storage/google/callback`
+
 
     const tokenResponse = await fetch("https://oauth2.googleapis.com/token", {
       method: "POST",
