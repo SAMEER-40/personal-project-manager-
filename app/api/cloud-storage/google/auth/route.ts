@@ -4,33 +4,49 @@ export async function POST(request: NextRequest) {
   try {
     const { code } = await request.json()
 
-    // Exchange authorization code for access token
+    if (!code) {
+      return NextResponse.json({ error: "Authorization code is required" }, { status: 400 })
+    }
+
+    const clientId = process.env.GOOGLE_CLIENT_ID!
+    const clientSecret = process.env.GOOGLE_CLIENT_SECRET!
+    const redirectUri = `${process.env.NEXT_PUBLIC_SITE_URL}/auth/google-callback` // ✅ Must match what's in Google Console
+
     const tokenResponse = await fetch("https://oauth2.googleapis.com/token", {
       method: "POST",
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
       },
       body: new URLSearchParams({
-        client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!,
-        client_secret: process.env.GOOGLE_CLIENT_SECRET!,
         code,
+        client_id: clientId,
+        client_secret: clientSecret,
+        redirect_uri: redirectUri,
         grant_type: "authorization_code",
-        redirect_uri: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/google-callback`,
       }),
     })
 
-    const tokens = await tokenResponse.json()
+    const tokenData = await tokenResponse.json()
 
-    if (tokens.error) {
-      return NextResponse.json({ error: tokens.error }, { status: 400 })
+    if (!tokenResponse.ok) {
+      console.error("Google token exchange error:", tokenData)
+      return NextResponse.json(
+        { error: tokenData.error_description || "Failed to exchange code for token" },
+        { status: 400 }
+      )
     }
 
+    // ✅ Return tokens (can later be saved to DB)
     return NextResponse.json({
-      access_token: tokens.access_token,
-      refresh_token: tokens.refresh_token,
+      accessToken: tokenData.access_token,
+      refreshToken: tokenData.refresh_token,
+      expiresIn: tokenData.expires_in,
+      scope: tokenData.scope,
+      tokenType: tokenData.token_type,
+      idToken: tokenData.id_token, // optional: useful for verifying user identity
     })
   } catch (error) {
-    console.error("Google auth error:", error)
-    return NextResponse.json({ error: "Authentication failed" }, { status: 500 })
+    console.error("Google callback error:", error)
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }
