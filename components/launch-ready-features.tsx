@@ -309,16 +309,16 @@ export function LaunchReadyFeatures({ projects, userRole, onUpdateProject, onAdd
       {/* Quick Actions Bar */}
       <Card>
         <CardContent className="p-4">
-          <div className="flex flex-wrap items-center gap-4">
+          <div className="flex flex-col sm:flex-row flex-wrap items-start sm:items-center gap-3 sm:gap-4">
             {/* Quick Capture */}
             <Dialog open={showQuickCapture} onOpenChange={setShowQuickCapture}>
               <DialogTrigger asChild>
-                <Button variant="outline" size="sm">
+                <Button variant="outline" size="sm" className="w-full sm:w-auto bg-transparent">
                   <Zap className="h-4 w-4 mr-2" />
                   Quick Capture
                 </Button>
               </DialogTrigger>
-              <DialogContent>
+              <DialogContent className="w-[95vw] max-w-md mx-auto">
                 <DialogHeader>
                   <DialogTitle>Quick Capture</DialogTitle>
                   <DialogDescription>Quickly capture an idea or project. You can refine it later.</DialogDescription>
@@ -329,21 +329,34 @@ export function LaunchReadyFeatures({ projects, userRole, onUpdateProject, onAdd
                     value={quickCaptureText}
                     onChange={(e) => setQuickCaptureText(e.target.value)}
                     rows={4}
+                    className="resize-none"
                   />
 
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
                     <Button variant="outline" size="sm" onClick={isRecording ? stopRecording : startRecording}>
                       {isRecording ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
-                      {isRecording ? "Stop Recording" : "Voice Note"}
+                      <span className="ml-2">{isRecording ? "Stop Recording" : "Voice Note"}</span>
                     </Button>
-                    {voiceNote && <Badge variant="secondary">Voice note added</Badge>}
+                    {voiceNote && (
+                      <Badge variant="secondary" className="text-xs">
+                        Voice note added
+                      </Badge>
+                    )}
                   </div>
 
-                  <div className="flex gap-2 justify-end">
-                    <Button variant="outline" onClick={() => setShowQuickCapture(false)}>
+                  <div className="flex gap-2 justify-end flex-wrap">
+                    <Button
+                      variant="outline"
+                      onClick={() => setShowQuickCapture(false)}
+                      className="flex-1 sm:flex-none"
+                    >
                       Cancel
                     </Button>
-                    <Button onClick={handleQuickCapture} disabled={!quickCaptureText.trim()}>
+                    <Button
+                      onClick={handleQuickCapture}
+                      disabled={!quickCaptureText.trim()}
+                      className="flex-1 sm:flex-none"
+                    >
                       Capture Idea
                     </Button>
                   </div>
@@ -354,31 +367,33 @@ export function LaunchReadyFeatures({ projects, userRole, onUpdateProject, onAdd
             {/* Project Templates */}
             <Dialog open={showTemplates} onOpenChange={setShowTemplates}>
               <DialogTrigger asChild>
-                <Button variant="outline" size="sm">
+                <Button variant="outline" size="sm" className="w-full sm:w-auto bg-transparent">
                   <FileText className="h-4 w-4 mr-2" />
                   Templates
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-2xl">
+              <DialogContent className="w-[95vw] max-w-2xl mx-auto max-h-[90vh] overflow-hidden">
                 <DialogHeader>
                   <DialogTitle>Project Templates</DialogTitle>
                   <DialogDescription>Start with proven project structures tailored to your role.</DialogDescription>
                 </DialogHeader>
-                <div className="grid gap-4 max-h-96 overflow-y-auto">
+                <div className="grid gap-4 max-h-[60vh] overflow-y-auto pr-2">
                   {templates.map((template, index) => (
                     <Card
                       key={index}
-                      className="cursor-pointer hover:bg-muted/50"
+                      className="cursor-pointer hover:bg-muted/50 transition-colors"
                       onClick={() => applyTemplate(template)}
                     >
                       <CardContent className="p-4">
-                        <div className="flex justify-between items-start mb-2">
-                          <h3 className="font-semibold">{template.title}</h3>
-                          <Badge variant="outline">{template.type}</Badge>
+                        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 mb-2">
+                          <h3 className="font-semibold text-sm sm:text-base">{template.title}</h3>
+                          <Badge variant="outline" className="self-start">
+                            {template.type}
+                          </Badge>
                         </div>
                         <p className="text-sm text-muted-foreground mb-2">{template.description}</p>
-                        <p className="text-xs text-muted-foreground">{template.notes}</p>
-                        <div className="flex gap-1 mt-2">
+                        <p className="text-xs text-muted-foreground mb-2">{template.notes}</p>
+                        <div className="flex gap-1 flex-wrap">
                           {template.tags.map((tag: string) => (
                             <Badge key={tag} variant="secondary" className="text-xs">
                               {tag}
@@ -393,34 +408,43 @@ export function LaunchReadyFeatures({ projects, userRole, onUpdateProject, onAdd
             </Dialog>
 
             {/* Export/Import */}
-            <Button variant="outline" size="sm" onClick={exportProjects}>
-              <Download className="h-4 w-4 mr-2" />
-              Export
-            </Button>
-
-            <label className="cursor-pointer">
-              <Button variant="outline" size="sm" asChild>
-                <span>
-                  <Upload className="h-4 w-4 mr-2" />
-                  Import
-                </span>
+            <div className="flex gap-2 w-full sm:w-auto">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={exportProjects}
+                className="flex-1 sm:flex-none bg-transparent"
+              >
+                <Download className="h-4 w-4 mr-2" />
+                <span className="hidden sm:inline">Export</span>
               </Button>
-              <input type="file" accept=".json" onChange={importProjects} className="hidden" />
-            </label>
+
+              <label className="cursor-pointer flex-1 sm:flex-none">
+                <Button variant="outline" size="sm" asChild className="w-full bg-transparent">
+                  <span>
+                    <Upload className="h-4 w-4 mr-2" />
+                    <span className="hidden sm:inline">Import</span>
+                  </span>
+                </Button>
+                <input type="file" accept=".json" onChange={importProjects} className="hidden" />
+              </label>
+            </div>
 
             {/* Settings */}
-            <div className="flex items-center gap-2 ml-auto">
+            <div className="flex items-center gap-4 w-full sm:w-auto sm:ml-auto">
               <div className="flex items-center gap-2">
                 <Switch id="notifications" checked={notifications} onCheckedChange={setNotifications} />
-                <Label htmlFor="notifications" className="text-sm">
+                <Label htmlFor="notifications" className="text-sm flex items-center gap-1">
                   {notifications ? <Bell className="h-4 w-4" /> : <BellOff className="h-4 w-4" />}
+                  <span className="hidden sm:inline">Notifications</span>
                 </Label>
               </div>
 
               <div className="flex items-center gap-2">
                 <Switch id="smart-scheduling" checked={smartScheduling} onCheckedChange={setSmartScheduling} />
-                <Label htmlFor="smart-scheduling" className="text-sm">
+                <Label htmlFor="smart-scheduling" className="text-sm flex items-center gap-1">
                   <Clock className="h-4 w-4" />
+                  <span className="hidden sm:inline">Smart</span>
                 </Label>
               </div>
             </div>
@@ -432,16 +456,18 @@ export function LaunchReadyFeatures({ projects, userRole, onUpdateProject, onAdd
       {focusSession && (
         <Card className="border-primary">
           <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-3 w-full sm:w-auto">
                 <div className="flex items-center gap-2">
                   <Timer className="h-5 w-5 text-primary" />
                   <span className="font-semibold">Focus Session</span>
                 </div>
-                <Badge variant="outline">{projects.find((p) => p.id === focusSession.projectId)?.title}</Badge>
+                <Badge variant="outline" className="self-start sm:self-auto">
+                  {projects.find((p) => p.id === focusSession.projectId)?.title}
+                </Badge>
               </div>
 
-              <div className="flex items-center gap-4">
+              <div className="flex items-center justify-between sm:justify-end gap-4 w-full sm:w-auto">
                 <div className="text-2xl font-mono font-bold">{formatTime(focusSession.timeLeft)}</div>
 
                 <div className="flex gap-2">
@@ -468,8 +494,8 @@ export function LaunchReadyFeatures({ projects, userRole, onUpdateProject, onAdd
       {/* Smart Search and Filters */}
       <Card>
         <CardContent className="p-4">
-          <div className="flex flex-wrap items-center gap-4">
-            <div className="flex-1 min-w-64">
+          <div className="flex flex-col gap-4">
+            <div className="w-full">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
@@ -481,53 +507,56 @@ export function LaunchReadyFeatures({ projects, userRole, onUpdateProject, onAdd
               </div>
             </div>
 
-            <Select value={filterStatus} onValueChange={setFilterStatus}>
-              <SelectTrigger className="w-32">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="paused">Paused</SelectItem>
-                <SelectItem value="completed">Completed</SelectItem>
-                <SelectItem value="archived">Archived</SelectItem>
-              </SelectContent>
-            </Select>
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
+              <Select value={filterStatus} onValueChange={setFilterStatus}>
+                <SelectTrigger className="w-full sm:w-32">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Status</SelectItem>
+                  <SelectItem value="active">Active</SelectItem>
+                  <SelectItem value="paused">Paused</SelectItem>
+                  <SelectItem value="completed">Completed</SelectItem>
+                  <SelectItem value="archived">Archived</SelectItem>
+                </SelectContent>
+              </Select>
 
-            <Select value={filterType} onValueChange={setFilterType}>
-              <SelectTrigger className="w-32">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Types</SelectItem>
-                {uniqueTypes.map((type) => (
-                  <SelectItem key={type} value={type}>
-                    {type}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+              <Select value={filterType} onValueChange={setFilterType}>
+                <SelectTrigger className="w-full sm:w-32">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Types</SelectItem>
+                  {uniqueTypes.map((type) => (
+                    <SelectItem key={type} value={type}>
+                      {type}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
 
-            {(searchQuery || filterStatus !== "all" || filterType !== "all") && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => {
-                  setSearchQuery("")
-                  setFilterStatus("all")
-                  setFilterType("all")
-                }}
-              >
-                Clear Filters
-              </Button>
+              {(searchQuery || filterStatus !== "all" || filterType !== "all") && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setSearchQuery("")
+                    setFilterStatus("all")
+                    setFilterType("all")
+                  }}
+                  className="w-full sm:w-auto"
+                >
+                  Clear Filters
+                </Button>
+              )}
+            </div>
+
+            {searchQuery && (
+              <div className="text-sm text-muted-foreground">
+                Found {filteredProjects.length} project{filteredProjects.length !== 1 ? "s" : ""}
+              </div>
             )}
           </div>
-
-          {searchQuery && (
-            <div className="mt-2 text-sm text-muted-foreground">
-              Found {filteredProjects.length} project{filteredProjects.length !== 1 ? "s" : ""}
-            </div>
-          )}
         </CardContent>
       </Card>
 
@@ -541,16 +570,21 @@ export function LaunchReadyFeatures({ projects, userRole, onUpdateProject, onAdd
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {projects
                 .filter((p) => p.status === "active")
                 .slice(0, 6)
                 .map((project) => (
-                  <Card key={project.id} className="cursor-pointer hover:bg-muted/50">
+                  <Card key={project.id} className="cursor-pointer hover:bg-muted/50 transition-colors">
                     <CardContent className="p-4">
-                      <h3 className="font-semibold mb-2">{project.title}</h3>
-                      <div className="flex gap-2">
-                        <Button size="sm" onClick={() => startFocusSession(project.id, 25)} disabled={!!focusSession}>
+                      <h3 className="font-semibold mb-3 text-sm">{project.title}</h3>
+                      <div className="flex gap-2 w-full">
+                        <Button
+                          size="sm"
+                          onClick={() => startFocusSession(project.id, 25)}
+                          disabled={!!focusSession}
+                          className="flex-1"
+                        >
                           25min
                         </Button>
                         <Button
@@ -558,6 +592,7 @@ export function LaunchReadyFeatures({ projects, userRole, onUpdateProject, onAdd
                           variant="outline"
                           onClick={() => startFocusSession(project.id, 45)}
                           disabled={!!focusSession}
+                          className="flex-1"
                         >
                           45min
                         </Button>
@@ -592,12 +627,20 @@ export function LaunchReadyFeatures({ projects, userRole, onUpdateProject, onAdd
                     (Date.now() - project.lastActivity.getTime()) / (1000 * 60 * 60 * 24),
                   )
                   return (
-                    <div key={project.id} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
-                      <div>
-                        <p className="font-medium">{project.title}</p>
+                    <div
+                      key={project.id}
+                      className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 bg-muted/30 rounded-lg"
+                    >
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-sm truncate">{project.title}</p>
                         <p className="text-sm text-muted-foreground">Last worked on {daysSinceActivity} days ago</p>
                       </div>
-                      <Button size="sm" onClick={() => startFocusSession(project.id, 25)} disabled={!!focusSession}>
+                      <Button
+                        size="sm"
+                        onClick={() => startFocusSession(project.id, 25)}
+                        disabled={!!focusSession}
+                        className="w-full sm:w-auto shrink-0"
+                      >
                         Focus Now
                       </Button>
                     </div>
@@ -605,7 +648,7 @@ export function LaunchReadyFeatures({ projects, userRole, onUpdateProject, onAdd
                 })}
 
               {projects.filter((p) => p.status === "active").length === 0 && (
-                <p className="text-muted-foreground text-center py-4">
+                <p className="text-muted-foreground text-center py-4 text-sm">
                   No active projects to suggest. Create a new project to get started!
                 </p>
               )}

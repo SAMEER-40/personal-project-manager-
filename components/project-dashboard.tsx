@@ -26,6 +26,7 @@ import { LaunchReadyFeatures } from "@/components/launch-ready-features"
 import { supabase } from "@/lib/supabase/client"
 import { AlternativeStorage } from "@/components/alternative-storage"
 import { AuthenticatedHeader } from "@/components/authenticated-header"
+import { NoteTakingSystem } from "@/components/note-taking-system"
 
 export interface Project {
   id: string
@@ -585,6 +586,9 @@ export function ProjectDashboard({ userRole, onBackToWelcome, user, onSignOut }:
               onUpdateProject={handleUpdateProject}
               onAddProject={handleAddProjectFromFeatures}
             />
+
+            {/* Note-Taking System accessible from everywhere */}
+            <NoteTakingSystem user={user} projects={projects} />
 
             <EngagementFeatures projects={projects} userRole={userRole.id} onUpdateProject={handleUpdateProject} />
 
