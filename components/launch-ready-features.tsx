@@ -250,6 +250,8 @@ export function LaunchReadyFeatures({ projects, userRole, onUpdateProject, onAdd
   const handleQuickCapture = () => {
     if (!quickCaptureText.trim()) return
 
+    console.log("[v0] Quick capturing project:", quickCaptureText.substring(0, 50))
+
     const newProject = {
       title: quickCaptureText.split("\n")[0] || "Quick Capture",
       type: "Quick Idea",
@@ -263,10 +265,13 @@ export function LaunchReadyFeatures({ projects, userRole, onUpdateProject, onAdd
     setQuickCaptureText("")
     setVoiceNote("")
     setShowQuickCapture(false)
+    console.log("[v0] Quick capture completed")
   }
 
   // Project Templates
   const applyTemplate = (template: any) => {
+    console.log("[v0] Applying template:", template.title)
+
     const newProject = {
       ...template,
       status: "active" as const,
@@ -274,6 +279,7 @@ export function LaunchReadyFeatures({ projects, userRole, onUpdateProject, onAdd
     }
     onAddProject(newProject)
     setShowTemplates(false)
+    console.log("[v0] Template applied successfully")
   }
 
   // Request notification permission
@@ -337,7 +343,9 @@ export function LaunchReadyFeatures({ projects, userRole, onUpdateProject, onAdd
                     <Button variant="outline" onClick={() => setShowQuickCapture(false)}>
                       Cancel
                     </Button>
-                    <Button onClick={handleQuickCapture}>Capture Idea</Button>
+                    <Button onClick={handleQuickCapture} disabled={!quickCaptureText.trim()}>
+                      Capture Idea
+                    </Button>
                   </div>
                 </div>
               </DialogContent>
