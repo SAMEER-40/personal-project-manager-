@@ -17,6 +17,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
   StickyNote,
   Plus,
@@ -27,9 +28,19 @@ import {
   Edit3,
   Save,
   Settings,
-  Palette,
   Type,
   Layout,
+  Mic,
+  Brain,
+  Clock,
+  Zap,
+  Moon,
+  Sun,
+  Sparkles,
+  Camera,
+  Link,
+  Lock,
+  Eye,
 } from "lucide-react"
 
 interface Note {
@@ -47,6 +58,12 @@ interface Note {
   textColor?: string
   fontSize?: string
   fontFamily?: string
+  isPrivate?: boolean
+  reminderDate?: Date
+  voiceNote?: string
+  attachments?: string[]
+  mood?: string
+  priority?: "low" | "medium" | "high"
 }
 
 interface NoteTakingSystemProps {
@@ -70,23 +87,48 @@ const NOTE_CATEGORIES = [
 
 const BACKGROUND_COLORS = [
   { id: "default", label: "Default", value: "default" },
-  { id: "yellow", label: "Yellow", value: "bg-yellow-50 dark:bg-yellow-950/20" },
-  { id: "blue", label: "Blue", value: "bg-blue-50 dark:bg-blue-950/20" },
-  { id: "green", label: "Green", value: "bg-green-50 dark:bg-green-950/20" },
-  { id: "purple", label: "Purple", value: "bg-purple-50 dark:bg-purple-950/20" },
-  { id: "pink", label: "Pink", value: "bg-pink-50 dark:bg-pink-950/20" },
+  { id: "yellow", label: "Sunny Yellow", value: "bg-yellow-50 dark:bg-yellow-950/20" },
+  { id: "blue", label: "Ocean Blue", value: "bg-blue-50 dark:bg-blue-950/20" },
+  { id: "green", label: "Forest Green", value: "bg-green-50 dark:bg-green-950/20" },
+  { id: "purple", label: "Royal Purple", value: "bg-purple-50 dark:bg-purple-950/20" },
+  { id: "pink", label: "Blossom Pink", value: "bg-pink-50 dark:bg-pink-950/20" },
+  { id: "orange", label: "Sunset Orange", value: "bg-orange-50 dark:bg-orange-950/20" },
+  { id: "teal", label: "Mint Teal", value: "bg-teal-50 dark:bg-teal-950/20" },
+  { id: "indigo", label: "Deep Indigo", value: "bg-indigo-50 dark:bg-indigo-950/20" },
+  { id: "rose", label: "Rose Gold", value: "bg-rose-50 dark:bg-rose-950/20" },
 ]
 
 const FONT_SIZES = [
+  { id: "tiny", label: "Tiny", value: "text-xs" },
   { id: "small", label: "Small", value: "text-sm" },
   { id: "medium", label: "Medium", value: "text-base" },
   { id: "large", label: "Large", value: "text-lg" },
+  { id: "huge", label: "Huge", value: "text-xl" },
 ]
 
 const FONT_FAMILIES = [
   { id: "default", label: "Default", value: "default" },
   { id: "mono", label: "Monospace", value: "font-mono" },
   { id: "serif", label: "Serif", value: "font-serif" },
+  { id: "handwriting", label: "Handwriting", value: "font-serif italic" },
+  { id: "bold", label: "Bold Sans", value: "font-sans font-bold" },
+]
+
+const APPEARANCE_THEMES = [
+  { id: "minimal", label: "Minimal", description: "Clean and simple" },
+  { id: "colorful", label: "Colorful", description: "Vibrant and energetic" },
+  { id: "dark", label: "Dark Mode", description: "Easy on the eyes" },
+  { id: "vintage", label: "Vintage", description: "Classic paper feel" },
+  { id: "neon", label: "Neon", description: "Futuristic glow" },
+]
+
+const MOOD_OPTIONS = [
+  { id: "excited", label: "Excited", icon: "🤩", color: "text-yellow-500" },
+  { id: "focused", label: "Focused", icon: "🎯", color: "text-blue-500" },
+  { id: "creative", label: "Creative", icon: "🎨", color: "text-purple-500" },
+  { id: "calm", label: "Calm", icon: "😌", color: "text-green-500" },
+  { id: "stressed", label: "Stressed", icon: "😰", color: "text-red-500" },
+  { id: "inspired", label: "Inspired", icon: "✨", color: "text-pink-500" },
 ]
 
 export function NoteTakingSystem({ user, projects = [], isFloating = false }: NoteTakingSystemProps) {
@@ -94,11 +136,23 @@ export function NoteTakingSystem({ user, projects = [], isFloating = false }: No
   const [showAddNote, setShowAddNote] = useState(false)
   const [editingNote, setEditingNote] = useState<Note | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
-  const [filterCategory, setFilterCategory] = useState<string>("all")
+  const [filterCategory, setFilterCategory] = useState<string>("general")
   const [filterTags, setFilterTags] = useState<string[]>([])
   const [showArchived, setShowArchived] = useState(false)
   const [showCustomization, setShowCustomization] = useState(false)
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
+  const [customSettings, setCustomSettings] = useState({
+    theme: "minimal",
+    autoSave: true,
+    smartSuggestions: true,
+    voiceNotes: false,
+    aiAssistance: false,
+    darkMode: false,
+    compactMode: false,
+    showMoodTracker: true,
+    reminderNotifications: true,
+    exportFormat: "markdown",
+  })
   const [newNote, setNewNote] = useState({
     title: "",
     content: "",
@@ -109,6 +163,9 @@ export function NoteTakingSystem({ user, projects = [], isFloating = false }: No
     textColor: "",
     fontSize: "medium",
     fontFamily: "default",
+    isPrivate: false,
+    mood: "no-mood",
+    priority: "medium" as "low" | "medium" | "high",
   })
 
   // Load notes from localStorage or Supabase
@@ -149,6 +206,17 @@ export function NoteTakingSystem({ user, projects = [], isFloating = false }: No
     }
   }, [notes, user])
 
+  useEffect(() => {
+    const savedSettings = localStorage.getItem("noteCustomSettings")
+    if (savedSettings) {
+      setCustomSettings(JSON.parse(savedSettings))
+    }
+  }, [])
+
+  useEffect(() => {
+    localStorage.setItem("noteCustomSettings", JSON.stringify(customSettings))
+  }, [customSettings])
+
   const generateId = () => {
     if (typeof window.crypto !== "undefined" && window.crypto.randomUUID) {
       return window.crypto.randomUUID()
@@ -177,6 +245,9 @@ export function NoteTakingSystem({ user, projects = [], isFloating = false }: No
       textColor: newNote.textColor,
       fontSize: newNote.fontSize,
       fontFamily: newNote.fontFamily,
+      isPrivate: newNote.isPrivate,
+      mood: newNote.mood === "no-mood" ? undefined : newNote.mood,
+      priority: newNote.priority,
     }
 
     setNotes([note, ...notes])
@@ -190,6 +261,9 @@ export function NoteTakingSystem({ user, projects = [], isFloating = false }: No
       textColor: "",
       fontSize: "medium",
       fontFamily: "default",
+      isPrivate: false,
+      mood: "no-mood",
+      priority: "medium",
     })
     setShowAddNote(false)
   }
@@ -243,7 +317,9 @@ export function NoteTakingSystem({ user, projects = [], isFloating = false }: No
   const allTags = [...new Set(notes.flatMap((note) => note.tags))]
 
   return (
-    <Card className={`w-full ${isFloating ? "border-0 shadow-none" : ""}`}>
+    <Card
+      className={`w-full ${isFloating ? "border-0 shadow-none" : ""} ${customSettings.theme === "dark" ? "dark" : ""}`}
+    >
       <CardHeader className={isFloating ? "p-3" : ""}>
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <CardTitle className="flex items-center gap-2">
@@ -400,6 +476,46 @@ export function NoteTakingSystem({ user, projects = [], isFloating = false }: No
                     </div>
                   </div>
 
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {customSettings.showMoodTracker && (
+                      <div>
+                        <Label htmlFor="note-mood">Current Mood (Optional)</Label>
+                        <Select value={newNote.mood} onValueChange={(value) => setNewNote({ ...newNote, mood: value })}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select mood..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="no-mood">No mood</SelectItem>
+                            {MOOD_OPTIONS.map((mood) => (
+                              <SelectItem key={mood.id} value={mood.id}>
+                                {mood.icon} {mood.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
+
+                    <div>
+                      <Label htmlFor="note-priority">Priority</Label>
+                      <Select
+                        value={newNote.priority}
+                        onValueChange={(value) =>
+                          setNewNote({ ...newNote, priority: value as "low" | "medium" | "high" })
+                        }
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="low">🟢 Low</SelectItem>
+                          <SelectItem value="medium">🟡 Medium</SelectItem>
+                          <SelectItem value="high">🔴 High</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
                   <div>
                     <Label htmlFor="note-tags">Tags (comma-separated)</Label>
                     <Input
@@ -408,6 +524,18 @@ export function NoteTakingSystem({ user, projects = [], isFloating = false }: No
                       value={newNote.tags}
                       onChange={(e) => setNewNote({ ...newNote, tags: e.target.value })}
                     />
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                    <Switch
+                      id="note-private"
+                      checked={newNote.isPrivate}
+                      onCheckedChange={(checked) => setNewNote({ ...newNote, isPrivate: checked })}
+                    />
+                    <Label htmlFor="note-private" className="flex items-center gap-2">
+                      {newNote.isPrivate ? <Lock className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      Private Note
+                    </Label>
                   </div>
 
                   <div className="flex gap-2 justify-end pt-4">
@@ -529,64 +657,200 @@ export function NoteTakingSystem({ user, projects = [], isFloating = false }: No
         )}
 
         <Dialog open={showCustomization} onOpenChange={setShowCustomization}>
-          <DialogContent className="w-[95vw] max-w-md mx-auto">
+          <DialogContent className="w-[95vw] max-w-2xl mx-auto max-h-[90vh] overflow-hidden">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
-                <Palette className="h-5 w-5" />
-                Customize Notes
+                <Sparkles className="h-5 w-5" />
+                Advanced Note Customization
               </DialogTitle>
               <DialogDescription>
-                Personalize your note-taking experience with themes, layouts, and more.
+                Transform your note-taking experience with powerful customization options.
               </DialogDescription>
             </DialogHeader>
-            <div className="space-y-4">
-              <div>
-                <Label>View Mode</Label>
-                <div className="flex gap-2 mt-2">
-                  <Button
-                    variant={viewMode === "grid" ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setViewMode("grid")}
-                    className="flex-1"
-                  >
-                    <Layout className="h-4 w-4 mr-2" />
-                    Grid
-                  </Button>
-                  <Button
-                    variant={viewMode === "list" ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setViewMode("list")}
-                    className="flex-1"
-                  >
-                    <Type className="h-4 w-4 mr-2" />
-                    List
-                  </Button>
-                </div>
-              </div>
+            <Tabs defaultValue="appearance" className="w-full">
+              <TabsList className="grid w-full grid-cols-4">
+                <TabsTrigger value="appearance">Appearance</TabsTrigger>
+                <TabsTrigger value="behavior">Behavior</TabsTrigger>
+                <TabsTrigger value="organization">Organization</TabsTrigger>
+                <TabsTrigger value="experimental">Experimental</TabsTrigger>
+              </TabsList>
 
-              <div>
-                <Label>Quick Actions</Label>
-                <div className="grid grid-cols-2 gap-2 mt-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      setFilterCategory("all")
-                      setFilterTags([])
-                      setSearchQuery("")
-                    }}
-                  >
-                    Clear Filters
-                  </Button>
-                  <Button variant="outline" size="sm" onClick={() => setShowArchived(!showArchived)}>
-                    {showArchived ? "Show Active" : "Show Archived"}
-                  </Button>
-                </div>
-              </div>
+              <div className="max-h-[50vh] overflow-y-auto mt-4">
+                <TabsContent value="appearance" className="space-y-4">
+                  <div>
+                    <Label>Theme Style</Label>
+                    <div className="grid grid-cols-2 gap-2 mt-2">
+                      {APPEARANCE_THEMES.map((theme) => (
+                        <Button
+                          key={theme.id}
+                          variant={customSettings.theme === theme.id ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => setCustomSettings({ ...customSettings, theme: theme.id })}
+                          className="flex flex-col h-auto py-3"
+                        >
+                          <span className="font-medium">{theme.label}</span>
+                          <span className="text-xs text-muted-foreground">{theme.description}</span>
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
 
-              <div className="flex justify-end">
-                <Button onClick={() => setShowCustomization(false)}>Done</Button>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      {customSettings.darkMode ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
+                      <Label>Dark Mode</Label>
+                    </div>
+                    <Switch
+                      checked={customSettings.darkMode}
+                      onCheckedChange={(checked) => setCustomSettings({ ...customSettings, darkMode: checked })}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <Label>Compact Mode</Label>
+                    <Switch
+                      checked={customSettings.compactMode}
+                      onCheckedChange={(checked) => setCustomSettings({ ...customSettings, compactMode: checked })}
+                    />
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="behavior" className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Save className="h-4 w-4" />
+                      <Label>Auto-save Notes</Label>
+                    </div>
+                    <Switch
+                      checked={customSettings.autoSave}
+                      onCheckedChange={(checked) => setCustomSettings({ ...customSettings, autoSave: checked })}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Zap className="h-4 w-4" />
+                      <Label>Smart Suggestions</Label>
+                    </div>
+                    <Switch
+                      checked={customSettings.smartSuggestions}
+                      onCheckedChange={(checked) => setCustomSettings({ ...customSettings, smartSuggestions: checked })}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Clock className="h-4 w-4" />
+                      <Label>Reminder Notifications</Label>
+                    </div>
+                    <Switch
+                      checked={customSettings.reminderNotifications}
+                      onCheckedChange={(checked) =>
+                        setCustomSettings({ ...customSettings, reminderNotifications: checked })
+                      }
+                    />
+                  </div>
+
+                  <div>
+                    <Label>Export Format</Label>
+                    <Select
+                      value={customSettings.exportFormat}
+                      onValueChange={(value) => setCustomSettings({ ...customSettings, exportFormat: value })}
+                    >
+                      <SelectTrigger className="mt-2">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="markdown">Markdown (.md)</SelectItem>
+                        <SelectItem value="pdf">PDF Document</SelectItem>
+                        <SelectItem value="json">JSON Data</SelectItem>
+                        <SelectItem value="txt">Plain Text</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="organization" className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <Label>Show Mood Tracker</Label>
+                    <Switch
+                      checked={customSettings.showMoodTracker}
+                      onCheckedChange={(checked) => setCustomSettings({ ...customSettings, showMoodTracker: checked })}
+                    />
+                  </div>
+
+                  <div>
+                    <Label>Quick Actions</Label>
+                    <div className="grid grid-cols-2 gap-2 mt-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setFilterCategory("all")
+                          setFilterTags([])
+                          setSearchQuery("")
+                        }}
+                      >
+                        <Search className="h-4 w-4 mr-2" />
+                        Clear Filters
+                      </Button>
+                      <Button variant="outline" size="sm" onClick={() => setShowArchived(!showArchived)}>
+                        <Archive className="h-4 w-4 mr-2" />
+                        {showArchived ? "Show Active" : "Show Archived"}
+                      </Button>
+                    </div>
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="experimental" className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Mic className="h-4 w-4" />
+                      <Label>Voice Notes (Beta)</Label>
+                    </div>
+                    <Switch
+                      checked={customSettings.voiceNotes}
+                      onCheckedChange={(checked) => setCustomSettings({ ...customSettings, voiceNotes: checked })}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Brain className="h-4 w-4" />
+                      <Label>AI Writing Assistant</Label>
+                    </div>
+                    <Switch
+                      checked={customSettings.aiAssistance}
+                      onCheckedChange={(checked) => setCustomSettings({ ...customSettings, aiAssistance: checked })}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Experimental Features</Label>
+                    <div className="grid grid-cols-1 gap-2">
+                      <Button variant="outline" size="sm" className="justify-start bg-transparent">
+                        <Camera className="h-4 w-4 mr-2" />
+                        Image Recognition
+                      </Button>
+                      <Button variant="outline" size="sm" className="justify-start bg-transparent">
+                        <Link className="h-4 w-4 mr-2" />
+                        Smart Linking
+                      </Button>
+                      <Button variant="outline" size="sm" className="justify-start bg-transparent">
+                        <Sparkles className="h-4 w-4 mr-2" />
+                        Auto-categorization
+                      </Button>
+                    </div>
+                  </div>
+                </TabsContent>
               </div>
+            </Tabs>
+
+            <div className="flex justify-end pt-4 border-t">
+              <Button onClick={() => setShowCustomization(false)}>
+                <Save className="h-4 w-4 mr-2" />
+                Save Preferences
+              </Button>
             </div>
           </DialogContent>
         </Dialog>
@@ -605,7 +869,6 @@ export function NoteTakingSystem({ user, projects = [], isFloating = false }: No
   )
 }
 
-// Note Card Component
 function NoteCard({
   note,
   projects,
@@ -625,6 +888,7 @@ function NoteCard({
 }) {
   const category = NOTE_CATEGORIES.find((cat) => cat.id === note.category)
   const linkedProject = projects.find((p) => p.id === note.projectId)
+  const mood = MOOD_OPTIONS.find((m) => m.id === note.mood)
 
   const fontSize = FONT_SIZES.find((s) => s.id === note.fontSize)?.value || "text-base"
   const fontFamily =
@@ -633,7 +897,20 @@ function NoteCard({
       : FONT_FAMILIES.find((f) => f.id === note.fontFamily)?.value || ""
   const backgroundColor = note.backgroundColor === "default" ? "" : note.backgroundColor || ""
 
-  const cardClasses = `cursor-pointer hover:shadow-md transition-shadow ${
+  const getPriorityColor = (priority?: string) => {
+    switch (priority) {
+      case "high":
+        return "border-l-red-500"
+      case "medium":
+        return "border-l-yellow-500"
+      case "low":
+        return "border-l-green-500"
+      default:
+        return ""
+    }
+  }
+
+  const cardClasses = `cursor-pointer hover:shadow-md transition-shadow border-l-4 ${getPriorityColor(note.priority)} ${
     note.isPinned ? "ring-2 ring-primary/20" : ""
   } ${backgroundColor} ${viewMode === "list" ? "flex items-start gap-4 p-4" : ""}`
 
@@ -643,7 +920,9 @@ function NoteCard({
         <div className={`flex items-start justify-between mb-2 ${viewMode === "list" ? "mb-1" : ""}`}>
           <div className="flex items-center gap-2 flex-1 min-w-0">
             {note.isPinned && <Pin className="h-4 w-4 text-primary shrink-0" />}
+            {note.isPrivate && <Lock className="h-3 w-3 text-muted-foreground shrink-0" />}
             <h3 className={`font-semibold truncate ${fontSize} ${fontFamily}`}>{note.title}</h3>
+            {mood && <span className="text-sm">{mood.icon}</span>}
           </div>
           <div className="flex items-center gap-1 shrink-0">
             <Button
@@ -758,6 +1037,9 @@ function EditNoteDialog({
     fontSize: note.fontSize || "medium",
     fontFamily: note.fontFamily || "default",
     backgroundColor: note.backgroundColor || "default",
+    mood: note.mood || "no-mood",
+    priority: note.priority || "medium",
+    isPrivate: note.isPrivate || false,
   })
 
   const handleSave = () => {
@@ -768,6 +1050,7 @@ function EditNoteDialog({
         .map((tag) => tag.trim())
         .filter(Boolean),
       projectId: editedNote.projectId === "none" ? undefined : editedNote.projectId,
+      mood: editedNote.mood === "no-mood" ? undefined : editedNote.mood,
     }
     onSave(updatedNote)
   }
@@ -901,6 +1184,44 @@ function EditNoteDialog({
             </div>
           </div>
 
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="edit-mood">Mood</Label>
+              <Select value={editedNote.mood} onValueChange={(value) => setEditedNote({ ...editedNote, mood: value })}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select mood..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="no-mood">No mood</SelectItem>
+                  {MOOD_OPTIONS.map((mood) => (
+                    <SelectItem key={mood.id} value={mood.id}>
+                      {mood.icon} {mood.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label htmlFor="edit-priority">Priority</Label>
+              <Select
+                value={editedNote.priority}
+                onValueChange={(value) =>
+                  setEditedNote({ ...editedNote, priority: value as "low" | "medium" | "high" })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="low">🟢 Low</SelectItem>
+                  <SelectItem value="medium">🟡 Medium</SelectItem>
+                  <SelectItem value="high">🔴 High</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
           <div>
             <Label htmlFor="edit-tags">Tags</Label>
             <Input
@@ -908,6 +1229,18 @@ function EditNoteDialog({
               value={editedNote.tags}
               onChange={(e) => setEditedNote({ ...editedNote, tags: e.target.value })}
             />
+          </div>
+
+          <div className="flex items-center space-x-2">
+            <Switch
+              id="edit-private"
+              checked={editedNote.isPrivate}
+              onCheckedChange={(checked) => setEditedNote({ ...editedNote, isPrivate: checked })}
+            />
+            <Label htmlFor="edit-private" className="flex items-center gap-2">
+              {editedNote.isPrivate ? <Lock className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              Private Note
+            </Label>
           </div>
 
           <div className="flex gap-2 justify-end pt-4">

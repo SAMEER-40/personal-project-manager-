@@ -39,27 +39,31 @@ export function AuthenticatedHeader({ user, userRole, onRoleChange }: Authentica
 
   return (
     <>
-      <div className="flex items-center gap-4 mb-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
-        <div className="flex items-center gap-3 flex-1">
-          <Avatar className="h-10 w-10 bg-blue-600 text-white">
-            <AvatarFallback className="bg-blue-600 text-white font-semibold">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 mb-6 p-3 sm:p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
+        <div className="flex items-center gap-3 flex-1 min-w-0">
+          <Avatar className="h-8 w-8 sm:h-10 sm:w-10 bg-blue-600 text-white flex-shrink-0">
+            <AvatarFallback className="bg-blue-600 text-white font-semibold text-xs sm:text-sm">
               {getUserInitials(user.email)}
             </AvatarFallback>
           </Avatar>
-          <div>
-            <h2 className="font-semibold text-gray-900">{user.email}</h2>
-            <p className="text-sm text-gray-600 flex items-center gap-1">
-              <Cloud className="h-3 w-3" />
-              {userRole} • Synced to cloud
+          <div className="min-w-0 flex-1">
+            <h2 className="font-semibold text-gray-900 text-sm sm:text-base truncate">{user.email}</h2>
+            <p className="text-xs sm:text-sm text-gray-600 flex items-center gap-1">
+              <Cloud className="h-3 w-3 flex-shrink-0" />
+              <span className="truncate">{userRole} • Synced to cloud</span>
             </p>
           </div>
         </div>
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm" className="border-blue-200 hover:bg-blue-50 bg-transparent">
-              <Settings className="h-4 w-4 mr-2" />
-              Account
+            <Button
+              variant="outline"
+              size="sm"
+              className="border-blue-200 hover:bg-blue-50 bg-transparent w-full sm:w-auto"
+            >
+              <Settings className="h-4 w-4 mr-2 flex-shrink-0" />
+              <span className="truncate">Account</span>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56">

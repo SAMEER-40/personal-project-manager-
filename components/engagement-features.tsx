@@ -227,16 +227,20 @@ export function EngagementFeatures({ projects, userRole, onUpdateProject }: Enga
       {/* Quick Actions Bar */}
       <Card>
         <CardContent className="p-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 w-full lg:w-auto">
               <Dialog open={showMoodDialog} onOpenChange={setShowMoodDialog}>
                 <DialogTrigger asChild>
-                  <Button variant="outline" size="sm" className="flex items-center gap-2 bg-transparent">
-                    <Heart className="h-4 w-4" />
-                    Log Mood & Energy
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex items-center gap-2 bg-transparent w-full sm:w-auto justify-center sm:justify-start"
+                  >
+                    <Heart className="h-4 w-4 flex-shrink-0" />
+                    <span className="truncate">Log Mood & Energy</span>
                   </Button>
                 </DialogTrigger>
-                <DialogContent>
+                <DialogContent className="w-[95vw] max-w-md mx-auto">
                   <DialogHeader>
                     <DialogTitle>How are you feeling?</DialogTitle>
                     <DialogDescription>
@@ -247,29 +251,39 @@ export function EngagementFeatures({ projects, userRole, onUpdateProject }: Enga
                 </DialogContent>
               </Dialog>
 
-              <Button variant="outline" size="sm" onClick={() => setShowSocialFeatures(true)}>
-                <Users className="h-4 w-4 mr-2" />
-                Social
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowSocialFeatures(true)}
+                className="w-full sm:w-auto justify-center sm:justify-start"
+              >
+                <Users className="h-4 w-4 mr-2 flex-shrink-0" />
+                <span className="truncate">Social</span>
               </Button>
 
-              <Button variant="outline" size="sm" onClick={() => setShowAchievements(true)}>
-                <Trophy className="h-4 w-4 mr-2" />
-                Achievements ({unlockedAchievements.length})
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowAchievements(true)}
+                className="w-full sm:w-auto justify-center sm:justify-start"
+              >
+                <Trophy className="h-4 w-4 mr-2 flex-shrink-0" />
+                <span className="truncate">Achievements ({unlockedAchievements.length})</span>
               </Button>
             </div>
 
-            <div className="flex items-center gap-4">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 w-full lg:w-auto">
               {currentMood && (
-                <div className="flex items-center gap-2 text-sm">
+                <div className="flex items-center gap-2 text-sm w-full sm:w-auto">
                   {getMoodIcon(currentMood.mood)}
                   {getEnergyIcon(currentMood.energy)}
-                  <span className="capitalize">{currentMood.mood}</span>
+                  <span className="capitalize truncate">{currentMood.mood}</span>
                 </div>
               )}
 
-              <div className="flex items-center gap-2">
-                <Flame className="h-4 w-4 text-orange-500" />
-                <span className="font-semibold">{streak} day streak</span>
+              <div className="flex items-center gap-2 w-full sm:w-auto">
+                <Flame className="h-4 w-4 text-orange-500 flex-shrink-0" />
+                <span className="font-semibold truncate">{streak} day streak</span>
               </div>
             </div>
           </div>
@@ -286,13 +300,16 @@ export function EngagementFeatures({ projects, userRole, onUpdateProject }: Enga
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex gap-4">
+            <div className="flex flex-col sm:flex-row gap-4">
               {recentAchievements.map((achievement) => (
-                <div key={achievement.id} className="flex items-center gap-2 bg-muted/50 rounded-lg p-3">
-                  <span className="text-2xl">{achievement.icon}</span>
-                  <div>
-                    <div className="font-medium">{achievement.title}</div>
-                    <div className="text-sm text-muted-foreground">{achievement.description}</div>
+                <div
+                  key={achievement.id}
+                  className="flex items-center gap-2 bg-muted/50 rounded-lg p-3 w-full sm:flex-1"
+                >
+                  <span className="text-2xl flex-shrink-0">{achievement.icon}</span>
+                  <div className="min-w-0 flex-1">
+                    <div className="font-medium truncate">{achievement.title}</div>
+                    <div className="text-sm text-muted-foreground truncate">{achievement.description}</div>
                   </div>
                 </div>
               ))}
@@ -323,7 +340,7 @@ export function EngagementFeatures({ projects, userRole, onUpdateProject }: Enga
 
       {/* Achievements Dialog */}
       <Dialog open={showAchievements} onOpenChange={setShowAchievements}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="w-[95vw] max-w-2xl mx-auto max-h-[90vh]">
           <DialogHeader>
             <DialogTitle>Your Achievements</DialogTitle>
             <DialogDescription>Celebrate your progress and milestones</DialogDescription>
@@ -334,7 +351,7 @@ export function EngagementFeatures({ projects, userRole, onUpdateProject }: Enga
 
       {/* Social Features Dialog */}
       <Dialog open={showSocialFeatures} onOpenChange={setShowSocialFeatures}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="w-[95vw] max-w-2xl mx-auto max-h-[90vh]">
           <DialogHeader>
             <DialogTitle>Social & Accountability</DialogTitle>
             <DialogDescription>Connect with others and stay accountable</DialogDescription>
