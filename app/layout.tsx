@@ -13,7 +13,7 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "Project Sanctuary - Personal Project Manager",
   description: "A gentle space to reconnect with your unfinished projects and move forward with intention",
-  generator: "v0.app",
+  generator: "part of it i made ",
 }
 
 export default function RootLayout({
