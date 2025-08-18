@@ -668,25 +668,57 @@ export function NoteTakingSystem({ user, projects = [], isFloating = false }: No
               </DialogDescription>
             </DialogHeader>
             <Tabs defaultValue="appearance" className="w-full">
-              <TabsList className="grid w-full grid-cols-4">
-                <TabsTrigger value="appearance">Appearance</TabsTrigger>
-                <TabsTrigger value="behavior">Behavior</TabsTrigger>
-                <TabsTrigger value="organization">Organization</TabsTrigger>
-                <TabsTrigger value="experimental">Experimental</TabsTrigger>
+              <TabsList className="flex flex-wrap w-full gap-1 h-auto p-1 justify-start">
+                <TabsTrigger
+                  value="appearance"
+                  className="text-xs sm:text-sm py-2 flex-1 min-w-[calc(50%-0.125rem)] sm:min-w-[calc(33.333%-0.25rem)] lg:min-w-[calc(16.666%-0.25rem)]"
+                >
+                  Appearance
+                </TabsTrigger>
+                <TabsTrigger
+                  value="behavior"
+                  className="text-xs sm:text-sm py-2 flex-1 min-w-[calc(50%-0.125rem)] sm:min-w-[calc(33.333%-0.25rem)] lg:min-w-[calc(16.666%-0.25rem)]"
+                >
+                  Behavior
+                </TabsTrigger>
+                <TabsTrigger
+                  value="organization"
+                  className="text-xs sm:text-sm py-2 flex-1 min-w-[calc(50%-0.125rem)] sm:min-w-[calc(33.333%-0.25rem)] lg:min-w-[calc(16.666%-0.25rem)]"
+                >
+                  Organization
+                </TabsTrigger>
+                <TabsTrigger
+                  value="experimental"
+                  className="text-xs sm:text-sm py-2 flex-1 min-w-[calc(50%-0.125rem)] sm:min-w-[calc(33.333%-0.25rem)] lg:min-w-[calc(16.666%-0.25rem)]"
+                >
+                  Experimental
+                </TabsTrigger>
+                <TabsTrigger
+                  value="theme"
+                  className="text-xs sm:text-sm py-2 flex-1 min-w-[calc(50%-0.125rem)] sm:min-w-[calc(33.333%-0.25rem)] lg:min-w-[calc(16.666%-0.25rem)]"
+                >
+                  Theme
+                </TabsTrigger>
+                <TabsTrigger
+                  value="style"
+                  className="text-xs sm:text-sm py-2 flex-1 min-w-[calc(50%-0.125rem)] sm:min-w-[calc(33.333%-0.25rem)] lg:min-w-[calc(16.666%-0.25rem)]"
+                >
+                  Style
+                </TabsTrigger>
               </TabsList>
 
               <div className="max-h-[50vh] overflow-y-auto mt-4">
                 <TabsContent value="appearance" className="space-y-4">
                   <div>
                     <Label>Theme Style</Label>
-                    <div className="grid grid-cols-2 gap-2 mt-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
                       {APPEARANCE_THEMES.map((theme) => (
                         <Button
                           key={theme.id}
                           variant={customSettings.theme === theme.id ? "default" : "outline"}
                           size="sm"
                           onClick={() => setCustomSettings({ ...customSettings, theme: theme.id })}
-                          className="flex flex-col h-auto py-3"
+                          className="flex flex-col h-auto py-3 text-left"
                         >
                           <span className="font-medium">{theme.label}</span>
                           <span className="text-xs text-muted-foreground">{theme.description}</span>
@@ -840,6 +872,60 @@ export function NoteTakingSystem({ user, projects = [], isFloating = false }: No
                         <Sparkles className="h-4 w-4 mr-2" />
                         Auto-categorization
                       </Button>
+                    </div>
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="theme" className="space-y-4">
+                  <div>
+                    <Label>Color Themes</Label>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mt-2">
+                      {[
+                        { id: "ocean", name: "Ocean Blue", colors: ["#0ea5e9", "#0284c7"] },
+                        { id: "forest", name: "Forest Green", colors: ["#059669", "#047857"] },
+                        { id: "sunset", name: "Sunset Orange", colors: ["#ea580c", "#dc2626"] },
+                        { id: "lavender", name: "Lavender", colors: ["#8b5cf6", "#7c3aed"] },
+                        { id: "rose", name: "Rose Gold", colors: ["#f43f5e", "#e11d48"] },
+                        { id: "midnight", name: "Midnight", colors: ["#1e293b", "#0f172a"] },
+                      ].map((theme) => (
+                        <Button
+                          key={theme.id}
+                          variant="outline"
+                          className="h-16 flex flex-col gap-1 p-2 bg-transparent"
+                          onClick={() => setCustomSettings({ ...customSettings, colorTheme: theme.id })}
+                        >
+                          <div className="flex gap-1">
+                            {theme.colors.map((color, i) => (
+                              <div key={i} className="w-4 h-4 rounded-full" style={{ backgroundColor: color }} />
+                            ))}
+                          </div>
+                          <span className="text-xs">{theme.name}</span>
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="style" className="space-y-4">
+                  <div>
+                    <Label>Note Styles</Label>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
+                      {[
+                        { id: "card", name: "Card Style", desc: "Clean cards with shadows" },
+                        { id: "paper", name: "Paper Style", desc: "Classic notebook feel" },
+                        { id: "sticky", name: "Sticky Notes", desc: "Colorful sticky notes" },
+                        { id: "minimal", name: "Minimal Lines", desc: "Simple line separators" },
+                      ].map((style) => (
+                        <Button
+                          key={style.id}
+                          variant={customSettings.noteStyle === style.id ? "default" : "outline"}
+                          className="h-auto p-3 flex flex-col text-left"
+                          onClick={() => setCustomSettings({ ...customSettings, noteStyle: style.id })}
+                        >
+                          <span className="font-medium">{style.name}</span>
+                          <span className="text-xs text-muted-foreground">{style.desc}</span>
+                        </Button>
+                      ))}
                     </div>
                   </div>
                 </TabsContent>

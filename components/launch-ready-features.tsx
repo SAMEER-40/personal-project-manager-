@@ -651,7 +651,16 @@ export function LaunchReadyFeatures({ projects, userRole, onUpdateProject, onAdd
                     <span className="font-medium text-sm">Log Mood & Energy</span>
                   </div>
                   <p className="text-xs text-muted-foreground">Track how you feel to optimize your productivity</p>
-                  <Button size="sm" variant="outline" className="w-full bg-white/50 dark:bg-gray-900/50">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="w-full bg-white/50 dark:bg-gray-900/50"
+                    onClick={() => {
+                      console.log("[v0] Opening mood tracker")
+                      const moodEvent = new CustomEvent("openMoodTracker")
+                      window.dispatchEvent(moodEvent)
+                    }}
+                  >
                     Quick Log
                   </Button>
                 </div>
@@ -662,7 +671,16 @@ export function LaunchReadyFeatures({ projects, userRole, onUpdateProject, onAdd
                     <span className="font-medium text-sm">Social Achievements</span>
                   </div>
                   <p className="text-xs text-muted-foreground">Share your progress and celebrate wins</p>
-                  <Button size="sm" variant="outline" className="w-full bg-white/50 dark:bg-gray-900/50">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="w-full bg-white/50 dark:bg-gray-900/50"
+                    onClick={() => {
+                      console.log("[v0] Opening social achievements")
+                      const achievementsEvent = new CustomEvent("openAchievements")
+                      window.dispatchEvent(achievementsEvent)
+                    }}
+                  >
                     Share Progress
                   </Button>
                 </div>

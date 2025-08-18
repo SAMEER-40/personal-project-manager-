@@ -227,17 +227,17 @@ export function EngagementFeatures({ projects, userRole, onUpdateProject }: Enga
       {/* Quick Actions Bar */}
       <Card>
         <CardContent className="p-4">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 w-full lg:w-auto">
+          <div className="flex flex-col gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3">
               <Dialog open={showMoodDialog} onOpenChange={setShowMoodDialog}>
                 <DialogTrigger asChild>
                   <Button
                     variant="outline"
                     size="sm"
-                    className="flex items-center gap-2 bg-transparent w-full sm:w-auto justify-center sm:justify-start"
+                    className="flex items-center gap-2 bg-transparent justify-center py-3 px-4"
                   >
                     <Heart className="h-4 w-4 flex-shrink-0" />
-                    <span className="truncate">Log Mood & Energy</span>
+                    <span className="text-sm font-medium">Log Mood & Energy</span>
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="w-[95vw] max-w-md mx-auto">
@@ -255,35 +255,35 @@ export function EngagementFeatures({ projects, userRole, onUpdateProject }: Enga
                 variant="outline"
                 size="sm"
                 onClick={() => setShowSocialFeatures(true)}
-                className="w-full sm:w-auto justify-center sm:justify-start"
+                className="justify-center py-3 px-4"
               >
                 <Users className="h-4 w-4 mr-2 flex-shrink-0" />
-                <span className="truncate">Social</span>
+                <span className="text-sm font-medium">Social</span>
               </Button>
 
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setShowAchievements(true)}
-                className="w-full sm:w-auto justify-center sm:justify-start"
+                className="justify-center py-3 px-4"
               >
                 <Trophy className="h-4 w-4 mr-2 flex-shrink-0" />
-                <span className="truncate">Achievements ({unlockedAchievements.length})</span>
+                <span className="text-sm font-medium">Achievements ({unlockedAchievements.length})</span>
               </Button>
             </div>
 
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 w-full lg:w-auto">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pt-2 border-t">
               {currentMood && (
-                <div className="flex items-center gap-2 text-sm w-full sm:w-auto">
+                <div className="flex items-center gap-2 text-sm">
                   {getMoodIcon(currentMood.mood)}
                   {getEnergyIcon(currentMood.energy)}
-                  <span className="capitalize truncate">{currentMood.mood}</span>
+                  <span className="capitalize font-medium">{currentMood.mood}</span>
                 </div>
               )}
 
-              <div className="flex items-center gap-2 w-full sm:w-auto">
+              <div className="flex items-center gap-2">
                 <Flame className="h-4 w-4 text-orange-500 flex-shrink-0" />
-                <span className="font-semibold truncate">{streak} day streak</span>
+                <span className="font-semibold text-sm">{streak} day streak</span>
               </div>
             </div>
           </div>
@@ -529,8 +529,21 @@ function MoodBasedRecommendations({
                   size="sm"
                   variant="outline"
                   onClick={() => {
-                    const updated = { ...project, lastActivity: new Date() }
+                    console.log("[v0] Starting work on project:", project.title)
+                    const updated = {
+                      ...project,
+                      lastActivity: new Date(),
+                      status: "active" as const,
+                    }
                     onUpdateProject(updated)
+
+                    // Show success feedback
+                    if ("Notification" in window && Notification.permission === "granted") {
+                      new Notification(`Started working on: ${project.title}`, {
+                        body: "Project marked as active and moved to top of your list",
+                        icon: "/favicon.ico",
+                      })
+                    }
                   }}
                 >
                   Work on this
@@ -611,6 +624,38 @@ function SocialFeatures({
     return `${window.location.origin}/shared-project?data=${encodeURIComponent(JSON.stringify(shareData))}`
   }
 
+  const handleCheckIn = (partner: AccountabilityPartner) => {
+    console.log("[v0] Checking in with partner:", partner.name)
+
+    const updatedPartners = partners.map((p) => (p.id === partner.id ? { ...p, lastCheckIn: new Date() } : p))
+    onUpdatePartners(updatedPartners)
+
+    // Show success feedback
+    if ("Notification" in window && Notification.permission === "granted") {
+      new Notification(`Checked in with ${partner.name}`, {
+        body: "Keep each other motivated and accountable!",
+        icon: "/favicon.ico",
+      })
+    }
+  }
+
+  const handleShare = (projectId: string) => {
+    const project = projects.find((p) => p.id === projectId)
+    if (!project) return
+
+    console.log("[v0] Sharing project:", project.title)
+
+    const link = generateShareableLink(projectId)
+    navigator.clipboard.writeText(link).then(() => {
+      if ("Notification" in window && Notification.permission === "granted") {
+        new Notification("Project link copied!", {
+          body: `Share "${project.title}" with your accountability partners`,
+          icon: "/favicon.ico",
+        })
+      }
+    })
+  }
+
   return (
     <div className="space-y-6">
       {/* Accountability Partners */}
@@ -633,7 +678,7 @@ function SocialFeatures({
                 <div className="text-sm text-muted-foreground">{partner.email}</div>
                 <div className="text-xs text-muted-foreground">Shared projects: {partner.sharedProjects.length}</div>
               </div>
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" onClick={() => handleCheckIn(partner)}>
                 <Bell className="h-4 w-4 mr-1" />
                 Check In
               </Button>
@@ -651,14 +696,7 @@ function SocialFeatures({
             .map((project) => (
               <div key={project.id} className="flex items-center justify-between p-2 border rounded">
                 <span className="text-sm">{project.title}</span>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    const link = generateShareableLink(project.id)
-                    navigator.clipboard.writeText(link)
-                  }}
-                >
+                <Button variant="outline" size="sm" onClick={() => handleShare(project.id)}>
                   <Share2 className="h-4 w-4 mr-1" />
                   Share
                 </Button>
@@ -674,7 +712,14 @@ function SocialFeatures({
           <p>• Join weekly virtual co-working sessions</p>
           <p>• Share progress in the community forum</p>
           <p>• Get inspired by others' project journeys</p>
-          <Button variant="outline" className="mt-2 bg-transparent">
+          <Button
+            variant="outline"
+            className="mt-2 bg-transparent"
+            onClick={() => {
+              console.log("[v0] Joining community")
+              window.open("https://discord.gg/productivity-community", "_blank")
+            }}
+          >
             Join Community
           </Button>
         </div>
