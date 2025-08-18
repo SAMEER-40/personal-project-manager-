@@ -66,11 +66,182 @@ export default function RootLayout({
                   navigator.serviceWorker.register('/sw.js')
                     .then(function(registration) {
                       console.log('SW registered: ', registration);
+                      
+                      // Check for updates every 30 seconds
+                      setInterval(() => {
+                        registration.update();
+                      }, 30000);
+                      
+                      // Listen for service worker messages
+                      navigator.serviceWorker.addEventListener('message', (event) => {
+                        if (event.data.type === 'UPDATE_AVAILABLE') {
+                          showUpdateNotification(event.data.version);
+                        }
+                        if (event.data.type === 'UPDATE_COMPLETE') {
+                          hideUpdateNotification();
+                          showUpdateCompleteMessage(event.data.version);
+                        }
+                      });
+                      
+                      // Check for waiting service worker
+                      if (registration.waiting) {
+                        showUpdateNotification('latest');
+                      }
+                      
+                      // Listen for new service worker
+                      registration.addEventListener('updatefound', () => {
+                        const newWorker = registration.installing;
+                        if (newWorker) {
+                          newWorker.addEventListener('statechange', () => {
+                            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                              showUpdateNotification('latest');
+                            }
+                          });
+                        }
+                      });
                     })
                     .catch(function(registrationError) {
                       console.log('SW registration failed: ', registrationError);
                     });
                 });
+              }
+              
+              function showUpdateNotification(version) {
+                // Remove existing notification
+                const existing = document.getElementById('pwa-update-notification');
+                if (existing) existing.remove();
+                
+                // Create notification element
+                const notification = document.createElement('div');
+                notification.id = 'pwa-update-notification';
+                notification.style.cssText = \`
+                  position: fixed;
+                  top: 20px;
+                  right: 20px;
+                  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+                  color: white;
+                  padding: 16px 20px;
+                  border-radius: 12px;
+                  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+                  z-index: 10000;
+                  font-family: system-ui, -apple-system, sans-serif;
+                  font-size: 14px;
+                  max-width: 320px;
+                  backdrop-filter: blur(10px);
+                  border: 1px solid rgba(255,255,255,0.1);
+                  animation: slideIn 0.3s ease-out;
+                \`;
+                
+                notification.innerHTML = \`
+                  <div style="display: flex; align-items: center; gap: 12px;">
+                    <div style="flex: 1;">
+                      <div style="font-weight: 600; margin-bottom: 4px;">Update Available</div>
+                      <div style="opacity: 0.9; font-size: 12px;">Version \${version} is ready to install</div>
+                    </div>
+                    <div style="display: flex; gap: 8px;">
+                      <button onclick="installUpdate()" style="
+                        background: rgba(255,255,255,0.2);
+                        border: none;
+                        color: white;
+                        padding: 6px 12px;
+                        border-radius: 6px;
+                        font-size: 12px;
+                        cursor: pointer;
+                        font-weight: 500;
+                      ">Install</button>
+                      <button onclick="dismissUpdate()" style="
+                        background: transparent;
+                        border: 1px solid rgba(255,255,255,0.3);
+                        color: white;
+                        padding: 6px 12px;
+                        border-radius: 6px;
+                        font-size: 12px;
+                        cursor: pointer;
+                      ">Later</button>
+                    </div>
+                  </div>
+                \`;
+                
+                // Add animation styles
+                const style = document.createElement('style');
+                style.textContent = \`
+                  @keyframes slideIn {
+                    from { transform: translateX(100%); opacity: 0; }
+                    to { transform: translateX(0); opacity: 1; }
+                  }
+                  @keyframes slideOut {
+                    from { transform: translateX(0); opacity: 1; }
+                    to { transform: translateX(100%); opacity: 0; }
+                  }
+                \`;
+                document.head.appendChild(style);
+                
+                document.body.appendChild(notification);
+              }
+              
+              function installUpdate() {
+                if (navigator.serviceWorker.controller) {
+                  navigator.serviceWorker.controller.postMessage({ type: 'SKIP_WAITING' });
+                }
+                hideUpdateNotification();
+                showLoadingMessage();
+              }
+              
+              function dismissUpdate() {
+                hideUpdateNotification();
+              }
+              
+              function hideUpdateNotification() {
+                const notification = document.getElementById('pwa-update-notification');
+                if (notification) {
+                  notification.style.animation = 'slideOut 0.3s ease-in';
+                  setTimeout(() => notification.remove(), 300);
+                }
+              }
+              
+              function showLoadingMessage() {
+                const loading = document.createElement('div');
+                loading.id = 'pwa-loading';
+                loading.style.cssText = \`
+                  position: fixed;
+                  top: 20px;
+                  right: 20px;
+                  background: #10b981;
+                  color: white;
+                  padding: 12px 20px;
+                  border-radius: 8px;
+                  z-index: 10000;
+                  font-family: system-ui, -apple-system, sans-serif;
+                  font-size: 14px;
+                \`;
+                loading.textContent = 'Installing update...';
+                document.body.appendChild(loading);
+              }
+              
+              function showUpdateCompleteMessage(version) {
+                const loading = document.getElementById('pwa-loading');
+                if (loading) loading.remove();
+                
+                const complete = document.createElement('div');
+                complete.style.cssText = \`
+                  position: fixed;
+                  top: 20px;
+                  right: 20px;
+                  background: #10b981;
+                  color: white;
+                  padding: 12px 20px;
+                  border-radius: 8px;
+                  z-index: 10000;
+                  font-family: system-ui, -apple-system, sans-serif;
+                  font-size: 14px;
+                \`;
+                complete.textContent = \`Updated to version \${version}!\`;
+                document.body.appendChild(complete);
+                
+                setTimeout(() => {
+                  complete.style.animation = 'slideOut 0.3s ease-in';
+                  setTimeout(() => complete.remove(), 300);
+                }, 3000);
               }
             `,
           }}
