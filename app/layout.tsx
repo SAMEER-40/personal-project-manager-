@@ -1,14 +1,14 @@
 import type React from "react"
 import type { Metadata } from "next"
-import { Inter } from "next/font/google"
+// import { Inter } from "next/font/google"
 import { ThemeProvider } from "@/components/theme-provider"
 import "./globals.css"
 
-const inter = Inter({
-  subsets: ["latin"],
-  display: "swap",
-  variable: "--font-inter",
-})
+// const inter = Inter({
+//   subsets: ["latin"],
+//   display: "swap",
+//   variable: "--font-inter",
+// })
 
 export const metadata: Metadata = {
   title: "Project Sanctuary - Personal Project Manager",
@@ -247,7 +247,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className={`${inter.variable} font-sans antialiased`}>
+      <body className="font-sans antialiased">
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           {children}
         </ThemeProvider>
