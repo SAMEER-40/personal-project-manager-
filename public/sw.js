@@ -220,7 +220,7 @@ self.addEventListener("push", (event) => {
     ],
   }
 
-  event.waitUntil(self.registration.showNotification("Personal Project Manager", options))
+  event.waitUntil(self.registration.showNotification("", options))
 })
 
 self.addEventListener("notificationclick", (event) => {

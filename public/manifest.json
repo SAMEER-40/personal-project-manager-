@@ -1,6 +1,6 @@
 {
   "name": "Ascend",
-  "short_name": "ProjectManager",
+  "short_name": "Ascend",
   "description": "A comprehensive personal productivity tool to manage unfinished projects, reduce mental clutter, and encourage emotional clarity",
   "start_url": "/",
   "display": "standalone",
